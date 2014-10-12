@@ -14,9 +14,9 @@ get the prototype running first.
 
 * Please write documentation!
 * Please try to write tests!
-* Please annotate commits with [Test] or [Doc] to indicate their domain,
+* Please annotate commits with [Test],[Style] or [Doc] to indicate their domain,
   leave it empty for commits targeted at the core functionality. This is
-  very helpful to spot commit that are interesting.
+  very helpful to spot commits that are interesting.
 * If an issue exists, reference it!
 * Similar to neovim's development, use [WIP], [RFC] and [RDY] as tags in
   pull requests. Especially the [WIP] annotation has the potential to avoid
