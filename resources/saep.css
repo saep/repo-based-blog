@@ -1,0 +1,95 @@
+/* General Settings {{{1 */
+/* Colors {{{2 */
+body {
+	color:#e8e2b7;
+	background-color:#545454;
+}
+
+section {
+	color:#e8e2b7;
+}
+
+h1, h2, h3 {
+	color:#ec7600;
+}
+
+a {
+	color:#66ccb3;
+}
+
+a:hover {
+	color:#a082bd;
+}
+
+a:visited:hover {
+	color:#ff8bff;
+}
+
+a:visited {
+	color:#2aa198;
+}
+
+/* Text/Font configuration {{{2 */
+a {
+	text-decoration:none;
+}
+
+h3 {
+	text-decoration:underline;
+}
+
+h1, h2, h3 {
+	text-align:center;
+}
+
+h1 {
+	font-size:1.6rem;
+}
+
+p {
+	text-align:justify;
+}
+
+/* Special classes {{{1 */
+/* horizontal navigation bar {{{2 */
+nav.horiz-nav {
+	background: #293134;
+	box-shadow: -5rem 0 0 #293134, 5rem 0 0 #293134;
+	color: white;
+}
+
+nav.horiz-nav > ul {
+	width:100%;
+	padding:8px;
+	list-style:none;
+	background-color:#293134;
+	display:inline;
+}
+
+nav.horiz-nav > ul > li {
+	display:inline-block;
+	padding:8px 24px;
+}
+
+/* blog entry {{{2 */
+.blog-with-metadata {
+	margin:1rem auto;
+	max-width:40rem;
+	background-color:#293134;
+}
+
+section.blog {
+	padding:1rem;
+}
+
+.meta {
+	text-align:right;
+	float:right;
+}
+
+blockquote {
+	color:#bdccd3;
+}
+
+/* vim : foldmethod=marker noexpandtab
+ */
