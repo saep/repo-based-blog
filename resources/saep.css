@@ -19,6 +19,7 @@ a {
 
 a:hover {
 	color:#a082bd;
+	background-color:#545454;
 }
 
 a:visited:hover {
@@ -50,25 +51,50 @@ p {
 	text-align:justify;
 }
 
+/* Borders {{{2 */
+h1 {
+	border-width:0.2em;
+	border-color:#ec7600;
+	border-bottom-style:double;
+}
+
+h2 {
+	border-width:0.2em;
+	border-color:#ec7600;
+	border-bottom-style:solid;
+}
+
 /* Special classes {{{1 */
 /* horizontal navigation bar {{{2 */
 nav.horiz-nav {
 	background: #293134;
 	box-shadow: -5rem 0 0 #293134, 5rem 0 0 #293134;
-	color: white;
+	width:100%;
 }
 
 nav.horiz-nav > ul {
-	width:100%;
-	padding:8px;
-	list-style:none;
-	background-color:#293134;
-	display:inline;
+	padding:0;
 }
 
 nav.horiz-nav > ul > li {
-	display:inline-block;
-	padding:8px 24px;
+	display:inline;
+	padding:0 0.67rem;
+}
+
+nav.horiz-nav > ul > li > a {
+	padding:0.5rem 1.67rem;
+	text-decoration:none;
+	background-color: #293134;
+	border-width:0.2em;
+	border-style:solid;
+	border-radius: 1em;
+}
+
+nav.horiz-nav > ul > li > a:hover {
+	border-top-style:dotted;
+	border-bottom-style:dotted;
+	border-width:0.2em;
+	border-radius:1em;
 }
 
 /* blog entry {{{2 */
@@ -76,6 +102,7 @@ nav.horiz-nav > ul > li {
 	margin:1rem auto;
 	max-width:40rem;
 	background-color:#293134;
+	border-radius:2.5rem;
 }
 
 section.blog {
@@ -85,6 +112,12 @@ section.blog {
 .meta {
 	text-align:right;
 	float:right;
+	color:#bdccd3;
+	border-radius:0.15rem;
+	border-color:#ec7600;
+	border-style:dashed;
+	border-width:0.1em;
+	padding:0.5em;
 }
 
 blockquote {
