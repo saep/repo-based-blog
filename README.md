@@ -1,3 +1,5 @@
+![buid-status](https://travis-ci.org/saep/saeplog.svg?branch=master)
+
 # saeplog
 
 Toy blogging website that I am occasionally working on.
