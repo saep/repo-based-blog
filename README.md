@@ -4,6 +4,37 @@
 
 Toy blogging website that I am occasionally working on.
 
+# Get this thing running
+
+On a clean system, that is one without any packages other than ghc and
+cabal-install, it should pretty much just work if you follow the following
+steps:
+
+> mkdir -p ~/git
+
+> git clone git@github.com:saep/saeplog.git ~/git/saeplog
+
+> mkdir -p ~git/myblog
+
+> cd ~/git/myblog
+
+> git init
+
+Write some blog entries and commit them. If the entries are not commited, 
+they are not found due to the way the crawler is implemented.
+
+> cd ~/git/saeplog
+
+> cabal sandbox init
+
+> cabal install --dependencies-only
+
+> cabal run saeplog -- -e ~/git/myblog -r ~/git/saeplog/resources
+
+Open your browser with the following url:
+http://127.0.0.1:8000
+
+
 # Contributing
 
 This is essentially just a reminder for myself as to how I want
