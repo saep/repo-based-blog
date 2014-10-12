@@ -16,7 +16,7 @@ executable saeplog
   main-is:              Main.hs
   hs-source-dirs:       executable
   -- other-modules:
-  build-depends:        base >=4.6 && <4.7,
+  build-depends:        base,
                         transformers,
                         happstack-server,
                         saeplog,
@@ -30,7 +30,7 @@ library
   ghc-options:          -threaded -O
   default-language:     Haskell2010
 
-  build-depends:        base >=4.6 && <4.7,
+  build-depends:        base,
                         acid-state,
                         blaze-html,
                         containers,
@@ -62,7 +62,7 @@ test-suite hspec
   hs-source-dirs:       test-suite, library
   main-is:              Spec.hs
   default-language:     Haskell2010
-  build-depends:        base >=4.6 && <4.7,
+  build-depends:        base,
                         saeplog,
 
                         hspec ==1.*,
