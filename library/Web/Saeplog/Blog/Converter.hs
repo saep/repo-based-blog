@@ -16,6 +16,7 @@ module Web.Saeplog.Blog.Converter
 
 import Web.Saeplog.Blog.Types
 
+import           Data.IxSet                   as IxSet
 import qualified Data.Set                     as Set
 import           Data.Time
 import           System.Locale
@@ -27,12 +28,12 @@ import           Text.Pandoc.Writers.HTML
 
 -- | Convert the given file contents given as a 'String' to an 'Html' element
 -- and add some meta data from the 'EntryData' argument'.
-convertToHTML :: EntryData -> String -> Html
+convertToHTML :: Entry -> String -> Html
 convertToHTML ed fileContent =
     H.div ! class_ "blog-with-metadata" $
         section ! class_ "blog" $ do
             H.div ! class_ "meta" $ H.span $
-                (fmtTime . fst . Set.findMax) (updates ed)
+                (fmtTime . entryUpdateTime . Set.findMax . toSet) (updates ed)
             writeHtml def $ case fileType ed of
                 PandocMarkdown ->
                     readMarkdown (def

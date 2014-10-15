@@ -39,6 +39,7 @@ library
                         filepath,
                         filestore >=0.6.0.3,
                         happstack-server ==7.*,
+                        ixset,
                         mtl,
                         old-locale,
                         pandoc >=1.12.3.3,
@@ -55,7 +56,9 @@ library
   other-modules:        Web.Saeplog.Blog.Crawler,
                         Web.Saeplog.Blog.Converter,
                         Web.Saeplog.Blog.State,
-                        Web.Saeplog.Blog.Types
+                        Web.Saeplog.Blog.Types,
+                        Web.Saeplog.Blog.Types.Entry,
+                        Web.Saeplog.Blog.Types.FileType
 
 test-suite hspec
   type:                 exitcode-stdio-1.0
@@ -74,6 +77,8 @@ test-suite hspec
                         filepath,
                         directory,
                         filestore,
+                        ixset,
+                        text,
                         transformers,
                         transformers-compat
 
