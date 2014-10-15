@@ -4,11 +4,12 @@ module Web.Saeplog.Blog.CrawlerSpec
 import Web.Saeplog.Blog.Crawler
 import Web.Saeplog.Blog.Types
 
-import           Control.Monad.Trans.Except
-import           Data.FileStore
-import qualified Data.Set                   as Set
-import           System.Directory
-import           System.FilePath
+import Control.Monad.Trans.Except
+import Data.FileStore
+import Data.IxSet
+import Data.List                  (sort)
+import System.Directory
+import System.FilePath
 
 import Test.Hspec
 
@@ -60,15 +61,15 @@ spec = do
     describe "collectEntryData" $ do
         it "should match this test case" $ do
             entries <- collectEntryData "test-resources"
-            Set.size entries `shouldBe` 2
-            Set.map fileType entries
-                `shouldBe` Set.fromList [ PandocMarkdown, LiterateHaskell ]
-            Set.map relativePath entries
-                `shouldBe` Set.fromList [ "test-resources/toplevel.md"
-                                        , "test-resources/nested/test/file.lhs" ]
+            size entries `shouldBe` 2
+            map fileType (toList entries)
+                `shouldBe` [ PandocMarkdown, LiterateHaskell ]
+            map relativePath (toList entries)
+                `shouldBe` [ "test-resources/toplevel.md"
+                           , "test-resources/nested/test/file.lhs" ]
 
-            Set.map (Set.size . updates) entries
-                `shouldBe` Set.fromList [1,2]
+            (sort . map (size . updates) . toList) entries
+                `shouldBe` [1,2]
 
 
 

@@ -16,22 +16,27 @@ import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Except
-import           Data.FileStore
+import           Data.FileStore             (Change (..), FileStore,
+                                             Revision (..), darcsFileStore,
+                                             gitFileStore, mercurialFileStore,
+                                             searchRevisions)
+import qualified Data.FileStore             as FS
 import           Data.Function              (on)
+import           Data.IxSet
+import qualified Data.IxSet                 as IxSet
 import           Data.List                  (sortBy)
 import           Data.Map                   (Map)
 import qualified Data.Map                   as Map
 import           Data.Maybe
 import           Data.Monoid
-import           Data.Set                   (Set)
-import qualified Data.Set                   as Set
+import           Data.Text                  (pack)
 import           System.Directory
 import           System.FilePath
 import           System.IO
 import           Web.Saeplog.Blog.Types
 
 -- | Search recursively in the given directory for blog entries.
-collectEntryData :: (MonadIO io) => FilePath -> io (Set EntryData)
+collectEntryData :: (MonadIO io) => FilePath -> io (IxSet Entry)
 collectEntryData dir = do
     efs <- runExceptT $ initializeFileStore dir
     case efs of
@@ -45,31 +50,32 @@ collectEntryData dir = do
 -- | Search through all revisions and create and update the 'EntryData' fields
 -- that shoud be returned'.
 createEntryDataFromFileStore :: (MonadIO io)
-                             => FileStoreData -> io (Set EntryData)
+                             => FileStoreData -> io (IxSet Entry)
 createEntryDataFromFileStore fsd = do
     rs <- liftIO $ searchRevisions
             (fileStore fsd) False (contentRelativePath fsd) ""
-    return . Set.fromList . Map.elems . collect mempty
+    return . fromList . Map.elems . collect mempty
            $ sortBy (compare `on` revDateTime) rs
 
   where
-    collect :: Map FilePath EntryData -> [Revision] -> Map FilePath EntryData
+    collect :: Map FilePath Entry -> [Revision] -> Map FilePath Entry
     collect m [] = m
     collect m (r:rs) = let m' = foldr go m (revChanges r)
                        in collect m' rs
       where
         go (Added fp) = case fileTypeFromExtension fp of
             Nothing -> id
-            Just ft -> Map.insert fp EntryData
-                            { fileType = ft
+            Just ft -> Map.insert fp Entry
+                            { author = (pack . FS.authorName . revAuthor) r
+                            , authorEmail = (pack . FS.authorEmail . revAuthor) r
+                            , fileType = ft
                             , relativePath = fp
                             , fullPath = repositoryPath fsd </> fp
-                            , updates = Set.singleton (revDateTime r, revId r)
-                            , markup = Nothing
+                            , updates = fromList $ [EntryUpdate (revDateTime r) (revId r)]
                             }
 
         go (Modified fp) = Map.adjust
-            (\e -> e { updates = Set.insert (revDateTime r, revId r) (updates e) })
+            (\e -> e { updates = insert (EntryUpdate (revDateTime r) (revId r)) (updates e) })
             fp
 
         go (Deleted fp) = Map.delete fp
@@ -101,7 +107,7 @@ initializeFileStore dir = do
         , lift (maybeMercurial cd)
         ]
 
-    when (null fileStores) $ throwE $ concat
+    when (Prelude.null fileStores) $ throwE $ concat
         [ "The directory '",  dir, "' which has been canonicalized to '"
         , cd, "' points to an unsupported repository "
         , "(includes no repository)."
@@ -112,7 +118,7 @@ initializeFileStore dir = do
 
     maybeGit       = maybeFileStore gitFileStore ".git"
     maybeDarcs     = maybeFileStore darcsFileStore "_darcs"
-    maybeMercurial = maybeFileStore darcsFileStore ".hg"
+    maybeMercurial = maybeFileStore mercurialFileStore ".hg"
 
 -- | Helper funtction to search for a (supported) repository containing blog
 -- entries.

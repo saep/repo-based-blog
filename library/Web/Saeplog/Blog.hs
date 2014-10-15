@@ -23,7 +23,7 @@ import Happstack.Server            (Response, ServerPartT, ok, toResponse)
 import Text.Blaze.Html5            as H
 import Text.Blaze.Html5.Attributes as A hiding (id)
 
-import qualified Data.Set as Set
+import Data.IxSet (toList)
 
 import Web.Saeplog.Blog.Converter
 import Web.Saeplog.Blog.Crawler   (collectEntryData)
@@ -40,7 +40,7 @@ data BlogConfig = BlogConfig
 initBlog :: (MonadIO io) => FilePath -> io (Maybe BlogConfig)
 initBlog fp = do
     entries <- collectEntryData fp
-    md <- liftIO $ forM (Set.toList entries) $ \e -> do
+    md <- liftIO $ forM (toList entries) $ \e -> do
         fc <- readFile (fullPath e)
         return (e, fc)
     let blogEntries = fmap (uncurry convertToHTML) md
