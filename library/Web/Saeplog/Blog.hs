@@ -55,6 +55,8 @@ serveBlog cfg = ok . toResponse $ do
             meta ! httpEquiv "Content-Type"
                  ! content "text/html;charset=utf-8"
             link ! rel "stylesheet" ! type_ "text/css" ! href "/resources/saep.css"
+            meta ! content "width=device-width, initial-scale=1, maximum-scale=1"
+                 ! name "viewport"
             sequence_ (additionalHeaders cfg)
         H.body $ do
             topNavigationBar [ ("Home", Just "/")
