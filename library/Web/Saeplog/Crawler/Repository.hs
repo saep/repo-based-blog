@@ -1,5 +1,5 @@
 {- |
-Module      :  Web.Saeplog.Blog.Crawler
+Module      :  Web.Saeplog.Crawler
 Description :  Implementation of a meta data collector for the blog entry
                repository
 Copyright   :  (c) Sebastian Witte
@@ -9,42 +9,40 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Blog.Crawler
+module Web.Saeplog.Crawler.Repository
     where
 
+import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Except
-import           Data.FileStore             (Change (..), FileStore,
-                                             Revision (..), darcsFileStore,
-                                             gitFileStore, mercurialFileStore,
-                                             searchRevisions)
-import qualified Data.FileStore             as FS
-import           Data.Function              (on)
+import           Data.FileStore                   (Change (..), FileStore,
+                                                   Revision (..),
+                                                   darcsFileStore, gitFileStore,
+                                                   mercurialFileStore,
+                                                   searchRevisions)
+import qualified Data.FileStore                   as FS
+import           Data.Function                    (on)
 import           Data.IxSet
-import qualified Data.IxSet                 as IxSet
-import           Data.List                  (sortBy)
-import           Data.Map                   (Map)
-import qualified Data.Map                   as Map
+import           Data.List                        (sortBy)
+import           Data.Map                         (Map)
+import qualified Data.Map                         as Map
 import           Data.Maybe
 import           Data.Monoid
-import           Data.Text                  (pack)
+import           Data.Text                        (pack)
 import           System.Directory
 import           System.FilePath
-import           System.IO
-import           Web.Saeplog.Blog.Types
+import           Web.Saeplog.Crawler.MetaCombiner as C
+import           Web.Saeplog.Crawler.MetaParser
+import           Web.Saeplog.Types                as E
 
 -- | Search recursively in the given directory for blog entries.
 collectEntryData :: (MonadIO io) => FilePath -> io (IxSet Entry)
 collectEntryData dir = do
     efs <- runExceptT $ initializeFileStore dir
     case efs of
-        Left err -> do
-            -- TODO saep 2014-10-09 proper logging or $(html error code) or
-            -- error page
-            liftIO $ hPutStrLn stderr err
-            return mempty
+        Left _ -> return mempty
         Right fsd -> createEntryDataFromFileStore fsd
 
 -- | Search through all revisions and create and update the 'EntryData' fields
@@ -65,17 +63,21 @@ createEntryDataFromFileStore fsd = do
       where
         go (Added fp) = case fileTypeFromExtension fp of
             Nothing -> id
-            Just ft -> Map.insert fp Entry
-                            { author = (pack . FS.authorName . revAuthor) r
-                            , authorEmail = (pack . FS.authorEmail . revAuthor) r
-                            , fileType = ft
-                            , relativePath = fp
-                            , fullPath = repositoryPath fsd </> fp
-                            , updates = fromList $ [EntryUpdate (revDateTime r) (revId r)]
+            Just ft ->
+                let meta = (either (const []) id . parseMeta . revDescription) r
+                in contract (Just fp) meta . Map.insert fp Entry
+                            { E._title = (pack "") -- TODO saep 2014-10-16
+                            , _author = (pack . FS.authorName . revAuthor) r
+                            , _authorEmail = (pack . FS.authorEmail . revAuthor) r
+                            , E._tags = mempty -- TODO saep 2014-10-16
+                            , _fileType = ft
+                            , _relativePath = fp
+                            , _fullPath = repositoryPath fsd </> fp
+                            , _updates = fromList $ [EntryUpdate (revDateTime r) (revId r)]
                             }
 
         go (Modified fp) = Map.adjust
-            (\e -> e { updates = insert (EntryUpdate (revDateTime r) (revId r)) (updates e) })
+            (updates %~ insert (EntryUpdate (revDateTime r) (revId r)))
             fp
 
         go (Deleted fp) = Map.delete fp
