@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {- |
-Module      :  Web.Saeplog.Blog.Converter
+Module      :  Web.Saeplog.Converter
 Description :  Converter functions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -10,13 +10,15 @@ Stability   :  experimental
 
 
 -}
-module Web.Saeplog.Blog.Converter
+module Web.Saeplog.Converter
     ( convertToHTML
     ) where
 
-import Web.Saeplog.Blog.Types
+import Web.Saeplog.Types
 
+import           Control.Lens
 import           Data.IxSet                   as IxSet
+import           Data.Monoid
 import qualified Data.Set                     as Set
 import           Data.Time
 import           System.Locale
@@ -32,9 +34,11 @@ convertToHTML :: Entry -> String -> Html
 convertToHTML ed fileContent =
     H.div ! class_ "blog-with-metadata" $
         section ! class_ "blog" $ do
-            H.div ! class_ "meta" $ H.span $
-                (fmtTime . entryUpdateTime . Set.findMax . toSet) (updates ed)
-            writeHtml def $ case fileType ed of
+            H.div ! class_ "meta" $ do
+                H.span $ (fmtTime . entryUpdateTime . Set.findMax . toSet) (ed^.updates)
+                br
+                H.span $ toHtml $ "by " <> ed^.author
+            writeHtml def $ case ed^.fileType of
                 PandocMarkdown ->
                     readMarkdown (def
                     { readerExtensions = pandocExtensions })

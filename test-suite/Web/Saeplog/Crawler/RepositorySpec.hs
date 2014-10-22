@@ -1,8 +1,9 @@
-module Web.Saeplog.Blog.CrawlerSpec
+{-# LANGUAGE OverloadedStrings #-}
+module Web.Saeplog.Crawler.RepositorySpec
     where
 
-import Web.Saeplog.Blog.Crawler
-import Web.Saeplog.Blog.Types
+import Web.Saeplog.Crawler.Repository
+import Web.Saeplog.Types
 
 import Control.Monad.Trans.Except
 import Data.FileStore
@@ -56,20 +57,28 @@ spec = do
             Right fsd <- runExceptT (initializeFileStore "test-resources")
             rev <- revision (fileStore fsd) "52114b620cf80ee01501417cfaf698c035437915"
             revDescription rev `shouldBe` "Initial commit"
+
             contentRelativePath fsd `shouldBe` "test-resources"
 
     describe "collectEntryData" $ do
         it "should match this test case" $ do
             entries <- collectEntryData "test-resources"
+
             size entries `shouldBe` 2
-            map fileType (toList entries)
+
+            size (entries @= AuthorName "Sebastian Witte")
+                `shouldBe` 2
+
+            map _fileType (toList entries)
                 `shouldBe` [ PandocMarkdown, LiterateHaskell ]
-            map relativePath (toList entries)
+            map _relativePath (toList entries)
                 `shouldBe` [ "test-resources/toplevel.md"
                            , "test-resources/nested/test/file.lhs" ]
 
-            (sort . map (size . updates) . toList) entries
+            (sort . map (size . _updates) . toList) entries
                 `shouldBe` [1,2]
+
+
 
 
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {- |
-Module      :  Web.Saeplog.Blog.Types.FileType
+Module      :  Web.Saeplog.Types.FileType
 Description :  Supported file types and conversion functions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Blog.Types.FileType
+module Web.Saeplog.Types.FileType
     where
 
 import           Data.Data       (Data, Typeable)
@@ -20,7 +20,7 @@ import           System.FilePath (takeExtensions)
 -- | Enumeration that contains all supported file type extensions for blog
 -- entries.
 data FileType = PandocMarkdown | LiterateHaskell
-    deriving (Eq, Ord, Show, Read, Enum, Data, Typeable)
+    deriving (Eq, Ord, Show, Read, Enum, Data, Typeable, Bounded)
 
 -- | This map stores all supported file type extensions mapped to the
 -- appropriate 'FileType' value.

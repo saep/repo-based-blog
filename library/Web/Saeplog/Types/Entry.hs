@@ -1,7 +1,8 @@
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
 {- |
-Module      :  Web.Saeplog.Blog.Types.Entry
+Module      :  Web.Saeplog.Types.Entry
 Description :  Entry data type definitions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -14,19 +15,17 @@ general contract for the unwrapping function is "get" followed by the data type
 name. These instances are necessary because everything is put into an 'IxSet'
 data structure.
 -}
-module Web.Saeplog.Blog.Types.Entry
-    ( Entry(..)
-    , EntryUpdate(..)
-    ) where
+module Web.Saeplog.Types.Entry
+    where
 
 import Data.Data                       (Data, Typeable)
-import Data.FileStore                  (Author, RevisionId, UTCTime)
+import Data.FileStore                  (RevisionId, UTCTime)
+import Control.Lens hiding (Indexable, Context)
 import Data.Function                   (on)
 import Data.IxSet
-import qualified Data.IxSet as IxSet
+import Data.Set (Set)
 import Data.Text                       (Text)
-import Text.Blaze.Html5                (Html)
-import Web.Saeplog.Blog.Types.FileType
+import Web.Saeplog.Types.FileType
 
 -- | Newtype around a 'UTCTime'
 newtype EntryUpdateTime = EntryUpdateTime { getEntryTime :: UTCTime }
@@ -53,14 +52,8 @@ instance Indexable EntryUpdate where
         , ixFun $ \eu -> [ EntryRevisionId $ entryRevisionId eu ]
         ]
 
--- | Newtype for 'Integer'
-newtype EntryId = EntryId { getEntryId :: Integer }
-    deriving (Eq, Ord, Enum, Data, Typeable)
--- | Newtype for 'FilePath'
-newtype RelativePath = RelativePath { getRelativePath :: FilePath }
-    deriving (Eq, Ord, Show, Read, Data, Typeable)
--- | Newtype for 'FilePath'
-newtype FullPath = FullPath { getFullPath :: FilePath }
+-- | Newtype for 'Text'
+newtype Title = Title { getTitle :: Text }
     deriving (Eq, Ord, Show, Read, Data, Typeable)
 -- | Newtype for 'Text'
 newtype AuthorName = AuthorName { getAuthorName :: Text }
@@ -68,38 +61,40 @@ newtype AuthorName = AuthorName { getAuthorName :: Text }
 -- | Newtype for 'Text'
 newtype AuthorEmail = AuthorEmail { getAuthorEmail :: Text }
     deriving (Eq, Ord, Show, Read, Data, Typeable)
+-- | Newtype for 'Set' 'Text'
+newtype Tags = Tags { getTags :: Set Text }
+    deriving (Eq, Ord, Show, Read, Data, Typeable)
+
+-- | Newtype for 'FilePath'
+newtype RelativePath = RelativePath { getRelativePath :: FilePath }
+    deriving (Eq, Ord, Show, Read, Data, Typeable)
+-- | Newtype for 'FilePath'
+newtype FullPath = FullPath { getFullPath :: FilePath }
+    deriving (Eq, Ord, Show, Read, Data, Typeable)
 
 -- | Metadata for a blog entry.
 data Entry = Entry
-    { author       :: Text
-    , authorEmail  :: Text
-    , fileType     :: FileType
-    , relativePath :: FilePath
-    , fullPath     :: FilePath
-    , updates      :: IxSet EntryUpdate
+    { _title        :: Text
+    , _author       :: Text
+    , _authorEmail  :: Text
+    , _tags         :: Set Text
+    , _fileType     :: FileType
+    , _relativePath :: FilePath
+    , _fullPath     :: FilePath
+    , _updates      :: IxSet EntryUpdate
     }
     deriving (Eq, Ord, Show, Read, Data, Typeable)
+makeLenses ''Entry
 
 instance Indexable Entry where
     empty = ixSet
-        [ ixFun $ \e -> [ AuthorName $ author e ]
-        , ixFun $ \e -> [ AuthorEmail $ authorEmail e ]
-        , ixFun $ \e -> [ fileType e ]
-        , ixFun $ \e -> [ RelativePath $ relativePath e ]
-        , ixFun $ \e -> [ FullPath $ fullPath e ]
-        , ixFun $ \e -> IxSet.toDescList (Proxy :: Proxy EntryUpdate) (updates e)
+        [ ixFun $ \e -> [ Title $ _title e ]
+        , ixFun $ \e -> [ AuthorName $ _author e ]
+        , ixFun $ \e -> [ AuthorEmail $ _authorEmail e ]
+        , ixFun $ \e -> [ _fileType e ]
+        , ixFun $ \e -> [ RelativePath $ _relativePath e ]
+        , ixFun $ \e -> [ FullPath $ _fullPath e ]
+        , ixFun $ \e -> toDescList (Proxy :: Proxy EntryUpdate) (_updates e)
         ]
-
--- | The path to the entry should generally be unique, so it identifies the
--- entry uniquely.
---instance Eq Entry where
-    --(==) = (==) `on` fullPath
-
--- | Compare by the time of the last update to the entry. If that is equal,
--- compare the file path.
---instance Ord Entry where
-    --compare a b = case (compare `on` (Set.findMax . updates)) a b of
-        --EQ -> (compare `on` fullPath) a b
-        --c  -> c
 
 

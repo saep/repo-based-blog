@@ -34,6 +34,7 @@ library
                         acid-state,
                         blaze-html >=0.7.0.2,
                         containers,
+                        data-default,
                         directory,
                         exceptions,
                         filepath,
@@ -41,8 +42,10 @@ library
                         happstack-server ==7.*,
                         ixset,
                         mtl,
+                        lens,
                         old-locale,
                         pandoc >=1.12.3.3,
+                        parsec >=3,
                         safecopy,
                         text,
                         time,
@@ -50,15 +53,18 @@ library
                         transformers-compat
 
   exposed-modules:      Web.Saeplog.Templates.Saep,
+                        Web.Saeplog.Crawler,
                         Web.Saeplog.Server,
                         Web.Saeplog.Blog
 
-  other-modules:        Web.Saeplog.Blog.Crawler,
-                        Web.Saeplog.Blog.Converter,
-                        Web.Saeplog.Blog.State,
-                        Web.Saeplog.Blog.Types,
-                        Web.Saeplog.Blog.Types.Entry,
-                        Web.Saeplog.Blog.Types.FileType
+  other-modules:        Web.Saeplog.Crawler.Repository,
+                        Web.Saeplog.Crawler.MetaParser,
+                        Web.Saeplog.Crawler.MetaCombiner,
+                        Web.Saeplog.Converter,
+                        Web.Saeplog.State,
+                        Web.Saeplog.Types,
+                        Web.Saeplog.Types.Entry,
+                        Web.Saeplog.Types.FileType
 
 test-suite hspec
   type:                 exitcode-stdio-1.0
@@ -72,13 +78,17 @@ test-suite hspec
                         QuickCheck >=2.6,
 
                         blaze-html,
-                        time,
                         containers,
+                        data-default,
                         filepath,
                         directory,
                         filestore,
                         ixset,
+                        lens,
+                        mtl,
+                        parsec >=3,
                         text,
+                        time,
                         transformers,
                         transformers-compat
 

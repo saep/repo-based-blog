@@ -6,7 +6,7 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
-module Web.Saeplog.Blog.State
+module Web.Saeplog.State
     where
 
 import Control.Applicative  ((<$>))
