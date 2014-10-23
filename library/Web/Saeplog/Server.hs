@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell   #-}
 {- |
 Module      :  Web.Saeplog.Server
 Description :  Server related configuration
@@ -13,38 +14,57 @@ is recommended to import them qualified.
 
 -}
 module Web.Saeplog.Server
-    ( Options(..)
+    ( Options
+    , happstackConf
+    , blogEntryRepository
+    , staticResourcesDirectory
     , start
+    , blogConfig
     , module ReExport
+    , module Data.Default
     ) where
 
-import Happstack.Server as ReExport (Conf (..), nullConf)
-
+import Control.Lens
+import Control.Monad
+import Control.Monad.Reader
+import Data.Default
+import Data.Maybe
+import Happstack.Server     as ReExport (Conf (..), nullConf)
+import Happstack.Server
 import Web.Saeplog.Blog
 
-import Control.Monad
-import Control.Monad.IO.Class
-import Happstack.Server       (Browsing (..), dir, serveDirectory, simpleHTTP)
-
 data Options = Options
-    { happstackConf            :: Conf
+    { _happstackConf            :: Conf
     -- ^ Configuration data type from the Happstack package
-    , blogEntryRepository      :: Maybe FilePath
+    , _blogEntryRepository      :: Maybe FilePath
     -- ^ Path to a repository (or a path within a repository). The supported
     -- repository types are determined by the version of the filestore package
     -- <http://hackage.haskell.org/package/filestore>
-    , staticResourcesDirectory :: Maybe FilePath
+    , _staticResourcesDirectory :: Maybe FilePath
+    , _blogConfig               :: BlogConfig
     }
+makeLenses ''Options
+
+instance Default Options where
+    def = Options
+        { _happstackConf = nullConf
+        , _blogEntryRepository = Nothing
+        , _staticResourcesDirectory = Nothing
+        , _blogConfig = def
+        }
 
 -- | Start the blog using the given configuration 'Options'. Currently it will
 -- just load all blog entries that are in the configured directory. Static
 -- resources (e.g. style sheets) are available via the @/resources/@ path.
-start :: (MonadIO io) => Options -> io ()
-start opts = do
-    blogConfig <- maybe (return Nothing) initBlog (blogEntryRepository opts)
-    liftIO $ simpleHTTP (happstackConf opts) $ msum
-        [ maybe mzero
-                (dir "resources" . serveDirectory DisableBrowsing [])
-                (staticResourcesDirectory opts)
-        , maybe mzero serveBlog blogConfig
-        ]
+start :: (MonadIO io)
+      => Options
+      -> [ReaderT Options (ServerPartT IO ) Response]
+      -> io ()
+start opts routes = do
+    blogcfg <- fromMaybe def `liftM`
+        maybe (return Nothing) initBlog (opts^.blogEntryRepository)
+    let opts' = opts & blogConfig .~ blogcfg
+
+    liftIO $ simpleHTTP (opts^.happstackConf) $ flip runReaderT opts' $
+        msum routes
+

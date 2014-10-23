@@ -11,16 +11,21 @@ Stability   :  experimental
 -}
 module Main where
 
+import           Control.Lens
 import           Control.Monad.IO.Class
 import           Data.Maybe
-import           Happstack.Server       (Conf (port), nullConf)
+import           Data.Text              (pack)
+import           Example
+import           Happstack.Server       (Conf (port), notFound, nullConf,
+                                         toResponse)
+import           Options.Applicative
+import           Web.Routes.Happstack   (implSite)
 import qualified Web.Saeplog.Server     as Server
-
-import Options.Applicative
 
 data BlogOptions = BlogOptions
     { blogEntryRepository      :: Maybe FilePath
     , staticResourcesDirectory :: Maybe FilePath
+    , address                  :: Maybe String
     , listenPort               :: Maybe Int
     }
 
@@ -37,6 +42,11 @@ blogOptions = BlogOptions
         <> metavar "PATH"
         <> help "Path to the folder which contains static resources (e.g. \
             \style sheets)"))
+    <*> optional (strOption
+        ( long "address"
+        <> short 'a'
+        <> metavar "ADDRESS"
+        <> help "Set the base address for the web page. (Default:http://127.0.0.1:8000)"))
     <*> optional (option auto
         ( long "port"
         <> short 'p'
@@ -47,12 +57,18 @@ blogOptions = BlogOptions
 main :: IO ()
 main = do
     args <- execParser opts
-    let conf = Server.Options
-            { Server.happstackConf            = nullConf { port = fromMaybe 8000 (listenPort args) }
-            , Server.blogEntryRepository      = blogEntryRepository args
-            , Server.staticResourcesDirectory = staticResourcesDirectory args
-            }
+    let siteAddress = pack $ fromMaybe "http://127.0.0.1:8000" (address args)
+        sitePort    = fromMaybe 8000 $ listenPort args
+
+    let conf = Server.def
+            & Server.happstackConf .~ nullConf { port = sitePort }
+            & Server.blogEntryRepository .~ blogEntryRepository args
+            & Server.staticResourcesDirectory .~ staticResourcesDirectory args
+
     liftIO $ Server.start conf
+        [ implSite siteAddress "" site
+        , notFound $ toResponse ()
+        ]
 
   where
     opts = info (helper <*> blogOptions)

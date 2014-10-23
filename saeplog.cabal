@@ -15,12 +15,26 @@ cabal-version:      >=1.10
 executable saeplog
   main-is:              Main.hs
   hs-source-dirs:       executable
-  -- other-modules:
+  other-modules:        Example
   build-depends:        base,
+                        blaze-html,
+                        boomerang,
+                        directory,
+                        filepath,
+                        ixset,
                         transformers,
                         happstack-server,
+                        lens,
+                        mtl,
                         saeplog,
-                        optparse-applicative
+                        text,
+                        time,
+                        optparse-applicative,
+                        web-routes,
+                        web-routes-boomerang,
+                        web-routes-happstack,
+                        web-routes-th
+
   hs-source-dirs:       executable
   default-language:     Haskell2010
   ghc-options:          -threaded -O
@@ -31,6 +45,7 @@ library
   default-language:     Haskell2010
 
   build-depends:        base,
+                        boomerang,
                         acid-state,
                         blaze-html >=0.7.0.2,
                         containers,
@@ -50,19 +65,23 @@ library
                         text,
                         time,
                         transformers,
-                        transformers-compat
+                        transformers-compat,
+                        web-routes,
+                        web-routes-boomerang,
+                        web-routes-happstack,
+                        web-routes-th
 
   exposed-modules:      Web.Saeplog.Templates.Saep,
+                        Web.Saeplog.Blog,
+                        Web.Saeplog.Converter,
                         Web.Saeplog.Crawler,
                         Web.Saeplog.Server,
-                        Web.Saeplog.Blog
+                        Web.Saeplog.Types
 
   other-modules:        Web.Saeplog.Crawler.Repository,
                         Web.Saeplog.Crawler.MetaParser,
                         Web.Saeplog.Crawler.MetaCombiner,
-                        Web.Saeplog.Converter,
                         Web.Saeplog.State,
-                        Web.Saeplog.Types,
                         Web.Saeplog.Types.Entry,
                         Web.Saeplog.Types.FileType
 
