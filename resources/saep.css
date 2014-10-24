@@ -119,6 +119,9 @@ section.blog {
 	border-width:0.1em;
 	padding:0.5em;
 }
+a.meta {
+	display:block;
+}
 
 blockquote {
 	color:#bdccd3;

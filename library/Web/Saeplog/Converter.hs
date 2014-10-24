@@ -34,7 +34,7 @@ convertToHTML :: Entry -> String -> Html
 convertToHTML ed fileContent =
     H.div ! class_ "blog-with-metadata" $
         section ! class_ "blog" $ do
-            H.div ! class_ "meta" $ do
+            H.a ! class_ "meta" ! href "TODO" $ do -- FIXME
                 H.span $ (fmtTime . entryUpdateTime . Set.findMax . toSet) (ed^.updates)
                 br
                 H.span $ toHtml $ "by " <> ed^.author
