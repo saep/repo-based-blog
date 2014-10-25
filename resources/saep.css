@@ -133,7 +133,7 @@ blockquote {
 
 /* Sintax Highlighting {{{1 */
 span.ot {
-	color:#678cb1;
+	color:#FCE94F;
 }
 span.kw {
 	color:#bdccd3;
@@ -146,6 +146,9 @@ span.fu {
 }
 span.st {
 	color:#66CCB3;
+}
+span.co {
+	color:#678cb1;
 }
 pre {
 	margin-left:1rem;
