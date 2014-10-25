@@ -127,5 +127,27 @@ blockquote {
 	color:#bdccd3;
 }
 
+/* Sintax Highlighting {{{1 */
+span.ot {
+	color:#678cb1;
+}
+span.kw {
+	color:#bdccd3;
+}
+span.dt {
+	color:#b58900;
+}
+span.fu {
+	color:#2aa198;
+}
+span.st {
+	color:#66CCB3;
+}
+pre {
+	margin-left:1rem;
+	margin-right:1rem;
+	margin-top:0.25rem;
+	margin-bottom:0.25rem;
+}
 /* vim : foldmethod=marker noexpandtab
  */

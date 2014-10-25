@@ -38,7 +38,7 @@ convertToHTML ed fileContent =
                 H.span $ (fmtTime . entryUpdateTime . Set.findMax . toSet) (ed^.updates)
                 br
                 H.span $ toHtml $ "by " <> ed^.author
-            writeHtml def $ case ed^.fileType of
+            writeHtml defaultWriter $ case ed^.fileType of
                 PandocMarkdown ->
                     readMarkdown (def
                     { readerExtensions = pandocExtensions })
@@ -48,6 +48,14 @@ convertToHTML ed fileContent =
                     { readerExtensions = Ext_literate_haskell `Set.insert` pandocExtensions })
                     fileContent
 
+-- | Default 'WriterOptions' for the converters.
+defaultWriter :: WriterOptions
+defaultWriter = def
+    { writerHtml5 = True
+    , writerEmailObfuscation = ReferenceObfuscation
+    , writerHighlight = True
+    -- , writerHighlightStyle = -- TODO saep 2014-10-25
+    }
 
 fmtTime :: UTCTime -> Html
 fmtTime = toHtml . formatTime defaultTimeLocale (iso8601DateFormat Nothing)
