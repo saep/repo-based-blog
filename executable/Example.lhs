@@ -227,7 +227,6 @@ the future. (I guess it doesn't matter. But paranoia doesn't mean they're not
 after you!)
 
 \begin{code}
--- TODO replace with this
 homePage :: RouteT Sitemap (ReaderT Options (ServerPartT IO)) Response
 homePage = do
     let thisFilePath = "executable/Example.lhs"
