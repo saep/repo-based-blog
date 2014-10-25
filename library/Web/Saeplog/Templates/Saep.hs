@@ -20,9 +20,10 @@ import Text.Blaze.Html5.Attributes as A
 topNavigationBar :: [(Html, Maybe String)] -> Html
 topNavigationBar [] = return ()
 topNavigationBar xs =
-    H.nav ! A.class_ "horiz-nav" $
-        ul ! class_ "horiz-nav" $
-            forM_ xs $ \(t, ml) ->
-                case ml of
-                    Just l -> li $ a ! href (toValue l) $ t
-                    _ -> li t
+    H.div ! class_ "horiz-nav" $
+        H.nav ! A.class_ "horiz-nav" $
+            ul ! class_ "horiz-nav" $
+                forM_ xs $ \(t, ml) ->
+                    case ml of
+                        Just l -> li $ a ! href (toValue l) $ t
+                        _ -> li t

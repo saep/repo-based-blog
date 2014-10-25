@@ -66,10 +66,14 @@ h2 {
 
 /* Special classes {{{1 */
 /* horizontal navigation bar {{{2 */
+div.horiz-nav {
+	text-align:center;
+	width:100%;
+}
+
 nav.horiz-nav {
 	background: #293134;
 	box-shadow: -5rem 0 0 #293134, 5rem 0 0 #293134;
-	width:100%;
 }
 
 nav.horiz-nav > ul {
