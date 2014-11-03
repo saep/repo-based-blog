@@ -20,7 +20,10 @@ import Control.Lens
 import Control.Monad
 import Control.Monad.Reader
 import Data.Default
-import Data.IxSet            (toList)
+import Data.Function
+import Data.IxSet            (toList, toSet)
+import Data.List (sortBy)
+import qualified Data.Set as Set
 import Text.Blaze.Html5      as H
 import Web.Saeplog.Converter
 import Web.Saeplog.Crawler   (collectEntryData)
@@ -41,7 +44,8 @@ initBlog fp = do
     md <- liftIO $ forM (toList es) $ \e -> do
         fc <- readFile (e^.fullPath)
         return (e, fc)
-    let blogEntries = fmap (uncurry convertToHTML) md
+    let md' = sortBy (flip compare `on` (Set.findMax . toSet . _updates . fst)) md
+    let blogEntries = fmap (uncurry convertToHTML) md'
     return $ Just (BlogConfig blogEntries)
 
 createBlogEntries :: (Functor m, Monad m)
