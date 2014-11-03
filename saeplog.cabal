@@ -62,6 +62,7 @@ library
                         pandoc >=1.12.3.3,
                         parsec >=3,
                         safecopy,
+                        stm,
                         text,
                         time,
                         transformers,
@@ -75,13 +76,12 @@ library
                         Web.Saeplog.Blog,
                         Web.Saeplog.Converter,
                         Web.Saeplog.Crawler,
-                        Web.Saeplog.Server,
                         Web.Saeplog.Types
 
   other-modules:        Web.Saeplog.Crawler.Repository,
                         Web.Saeplog.Crawler.MetaParser,
                         Web.Saeplog.Crawler.MetaCombiner,
-                        Web.Saeplog.State,
+                        Web.Saeplog.Blog.State,
                         Web.Saeplog.Types.Entry,
                         Web.Saeplog.Types.FileType
 

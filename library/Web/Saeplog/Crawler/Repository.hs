@@ -12,6 +12,7 @@ Stability   :  experimental
 module Web.Saeplog.Crawler.Repository
     where
 
+import           Control.Applicative
 import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
@@ -38,12 +39,14 @@ import           Web.Saeplog.Crawler.MetaParser
 import           Web.Saeplog.Types                as E
 
 -- | Search recursively in the given directory for blog entries.
-collectEntryData :: (MonadIO io) => FilePath -> io (IxSet Entry)
+collectEntryData :: (MonadIO io) => FilePath -> io (Either String (FileStore, IxSet Entry))
 collectEntryData dir = do
     efs <- runExceptT $ initializeFileStore dir
     case efs of
-        Left _ -> return mempty
-        Right fsd -> createEntryDataFromFileStore fsd
+        Left err -> return $ Left err
+        Right fsd -> do
+            es <- createEntryDataFromFileStore fsd
+            return $ Right (fileStore fsd, es)
 
 -- | Search through all revisions and create and update the 'EntryData' fields
 -- that shoud be returned'.
@@ -52,35 +55,40 @@ createEntryDataFromFileStore :: (MonadIO io)
 createEntryDataFromFileStore fsd = do
     rs <- liftIO $ searchRevisions
             (fileStore fsd) False (contentRelativePath fsd) ""
-    return . fromList . Map.elems . collect mempty
+    return . fromList . Map.elems . collect fsd 1 mempty
            $ sortBy (compare `on` revDateTime) rs
 
+collect :: FileStoreData -> Integer -> Map FilePath Entry -> [Revision] -> Map FilePath Entry
+collect _ _ fpMap [] = fpMap
+collect fsd eId fpMap (r:rs) =
+    let (eId',m') = foldr go (eId,fpMap) (revChanges r)
+    in collect fsd eId' m' rs
   where
-    collect :: Map FilePath Entry -> [Revision] -> Map FilePath Entry
-    collect m [] = m
-    collect m (r:rs) = let m' = foldr go m (revChanges r)
-                       in collect m' rs
-      where
-        go (Added fp) = case fileTypeFromExtension fp of
-            Nothing -> id
-            Just ft ->
-                let meta = (either (const []) id . parseMeta . revDescription) r
-                in contract (Just fp) meta . Map.insert fp Entry
-                            { E._title = (pack "") -- TODO saep 2014-10-16
-                            , _author = (pack . FS.authorName . revAuthor) r
-                            , _authorEmail = (pack . FS.authorEmail . revAuthor) r
-                            , E._tags = mempty -- TODO saep 2014-10-16
-                            , _fileType = ft
-                            , _relativePath = fp
-                            , _fullPath = repositoryPath fsd </> fp
-                            , _updates = fromList $ [EntryUpdate (revDateTime r) (revId r)]
-                            }
+    go (Added fp) (i,m) = case fileTypeFromExtension fp of
+        Nothing -> (i,m)
+        Just ft ->
+            let meta = (either (const []) id . parseMeta . revDescription) r
+                upd  = EntryUpdate (revDateTime r) (revId r)
+                m' = contract (Just fp) meta $ Map.insert fp Entry
+                        { _entryId      = i
+                        , E._title      = (pack . takeBaseName . dropExtensions) fp
+                        , _author       = (pack . FS.authorName . revAuthor) r
+                        , _authorEmail  = (pack . FS.authorEmail . revAuthor) r
+                        , E._tags       = mempty
+                        , _fileType     = ft
+                        , _relativePath = fp
+                        , _fullPath     = repositoryPath fsd </> fp
+                        , _updates      = fromList [upd]
+                        , _lastUpdate   = upd
+                        } m
+            in (succ i,m')
 
-        go (Modified fp) = Map.adjust
-            (updates %~ insert (EntryUpdate (revDateTime r) (revId r)))
-            fp
+    go (Modified fp) acc =
+        let t = EntryUpdate (revDateTime r) (revId r)
+            f e = e & updates %~ insert t & lastUpdate .~ t
+        in Map.adjust f fp <$> acc
 
-        go (Deleted fp) = Map.delete fp
+    go (Deleted fp) acc = fmap (Map.delete fp) acc
 
 -- | Helper data type for vaiu passing.
 data FileStoreData = FSD

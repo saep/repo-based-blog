@@ -4,17 +4,19 @@ module Web.Saeplog.Crawler.MetaCombinerSpec
 
 import           Control.Applicative
 import           Control.Lens                     hiding (elements)
-import Web.Saeplog.Types.FileType
 import           Data.Default
+import qualified Data.IxSet                       as IxSet
 import qualified Data.Map                         as Map
 import           Data.Monoid
 import           Data.Set                         (Set)
 import qualified Data.Set                         as Set
 import           Data.Text                        as T (Text, length, pack)
+import           Data.Time
+import           System.FilePath                  ((</>))
 import           Web.Saeplog.Crawler.MetaCombiner as M
 import           Web.Saeplog.Crawler.MetaParser   as M
-import System.FilePath ((</>))
 import           Web.Saeplog.Types.Entry
+import           Web.Saeplog.Types.FileType
 import           Web.Saeplog.Types.FileType
 
 import Test.Hspec      as Test
@@ -33,24 +35,40 @@ instance Arbitrary Text where
             0 -> "foo"
             _ -> r
 
+instance Arbitrary Day where
+    arbitrary = ModifiedJulianDay . getNonNegative <$> arbitrary
+
+instance Arbitrary DiffTime where
+    arbitrary = picosecondsToDiffTime . getNonNegative <$> arbitrary
+
+instance Arbitrary UTCTime where
+    arbitrary = UTCTime <$> arbitrary <*> arbitrary
+
+instance Arbitrary EntryUpdate where
+    arbitrary = EntryUpdate <$> arbitrary <*> (getNonEmpty <$> arbitrary)
+
 instance Arbitrary Entry where
     arbitrary = do
+        i <- getNonNegative <$> arbitrary
         t <- arbitrary
         a <- arbitrary
         m <- arbitrary
         ts <- arbitrary
         ft <- arbitraryBoundedEnum
+        u <- arbitrary
         (fp,rp) <- (\fp rp -> ("" </> getNonEmpty fp </> getNonEmpty rp, getNonEmpty rp))
                     <$> arbitrary <*> arbitrary
         return $ Entry
-            { _title        = t
+            { _entryId      = i
+            , _title        = t
             , _author       = a
             , _authorEmail  = m
             , _tags         = ts
             , _fileType     = ft
             , _relativePath = rp
             , _fullPath     = fp
-            , _updates      = mempty
+            , _updates      = IxSet.fromList [u]
+            , _lastUpdate   = u
             }
 
 instance Arbitrary TagQuantifier where
@@ -67,15 +85,19 @@ instance Arbitrary Meta where
 
 spec :: Spec
 spec = do
-    let mdMock = Entry
-            { _title = "title"
+    let t = UTCTime (ModifiedJulianDay 1337) (picosecondsToDiffTime 42)
+        eu = EntryUpdate t "foo"
+        mdMock = Entry
+            { _entryId = 7
+            , _title = "title"
             , _author = "me"
             , _authorEmail = "not@defin.ed"
             , _tags = mempty
             , _fileType = PandocMarkdown
             , _relativePath = "some/path"
             , _fullPath = "/root/for/some/path"
-            , _updates = mempty
+            , _updates = IxSet.fromList [eu]
+            , _lastUpdate = eu
             }
         md1 = mdMock & title .~ "Foo Bar"
                      & tags  .~ Set.fromList ["foo", "bar", "quz"]

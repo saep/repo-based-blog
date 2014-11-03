@@ -62,7 +62,7 @@ spec = do
 
     describe "collectEntryData" $ do
         it "should match this test case" $ do
-            entries <- collectEntryData "test-resources"
+            Right (_, entries) <- collectEntryData "test-resources"
 
             size entries `shouldBe` 2
 

@@ -27,3 +27,6 @@ topNavigationBar xs =
                     case ml of
                         Just l -> li $ a ! href (toValue l) $ t
                         _ -> li t
+
+entryNotFound :: String -> Html
+entryNotFound = toHtml

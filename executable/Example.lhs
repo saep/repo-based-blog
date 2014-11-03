@@ -42,8 +42,7 @@ know where a function is defined that is used in this example.
 
 \begin{code}
 import Web.Saeplog.Blog
-import Web.Saeplog.Converter (convertToHTML)
-import Web.Saeplog.Server
+import Web.Saeplog.Converter
 import Web.Saeplog.Templates.Saep
 import Web.Saeplog.Types as T
 
@@ -133,10 +132,14 @@ however help to know and write down the type as you can avoid misleading error
 messages in other parts of the code. Anyway, let's just go on.
 
 \begin{code}
-route :: Sitemap -> RouteT Sitemap (ReaderT Options (ServerPartT IO)) Response
-route url = case url of
+type StaticResrouceDirectory = Maybe FilePath
+
+route :: Blog
+      -> Sitemap
+      -> RouteT Sitemap (ReaderT StaticResrouceDirectory (ServerPartT IO)) Response
+route b url = case url of
     Home        -> homePage
-    Blog        -> serveBlog
+    Blog        -> serveBlog b
     Resources f -> serveResourceFile f
 \end{code}
 
@@ -151,9 +154,9 @@ the parser in `route` works, though.
 
 \begin{code}
 serveResourceFile :: Text
-                  -> RouteT Sitemap (ReaderT Options (ServerPartT IO)) Response
+                  -> RouteT Sitemap (ReaderT StaticResrouceDirectory (ServerPartT IO)) Response
 serveResourceFile f = do
-    maybeResDir <- view staticResourcesDirectory
+    maybeResDir <- ask
     case maybeResDir of
         Nothing -> mzero
         Just d  ->
@@ -210,11 +213,12 @@ then creates a Happstack response from it. The blog entries to show are
 configured to via command line parameter and beyond the purpose of this article.
 
 \begin{code}
-serveBlog :: RouteT Sitemap (ReaderT Options (ServerPartT IO)) Response
-serveBlog = do
-    entries <- lift $ createBlogEntries blogConfig
-    blog <- siteTemplate hs entries
-    lift . ok . toResponse $ blog
+serveBlog :: Blog
+          -> RouteT Sitemap (ReaderT StaticResrouceDirectory (ServerPartT IO)) Response
+serveBlog blog = do
+    entries <- lift . lift $ blogEntries blog
+    blogMarkup <- siteTemplate hs entries
+    lift . ok . toResponse $ blogMarkup
   where
     hs = [ H.title "Saeptain's log" ]
 \end{code}
@@ -227,26 +231,15 @@ the future. (I guess it doesn't matter. But paranoia doesn't mean they're not
 after you!)
 
 \begin{code}
-homePage :: RouteT Sitemap (ReaderT Options (ServerPartT IO)) Response
+homePage :: RouteT Sitemap (ReaderT StaticResrouceDirectory (ServerPartT IO)) Response
 homePage = do
     let thisFilePath = "executable/Example.lhs"
     thisExists <- liftIO $ doesFileExist thisFilePath
     case () of
         _ | thisExists -> do
-            pwd <- liftIO $ getCurrentDirectory
-            let fp = combine pwd thisFilePath
-            thisFile <- liftIO $ readFile fp
-            now <- liftIO $ getCurrentTime
-            let entry = Entry {}
-                              & T.title .~ "Examle home page"
-                              & author .~ "Sebastian Witte"
-                              & authorEmail .~ "woozletoff@gmail.com"
-                              & tags .~ mempty
-                              & fileType .~ LiterateHaskell
-                              & relativePath .~ "executable/Example.lhs"
-                              & fullPath .~ fp
-                              & updates .~ fromList [EntryUpdate now "dummy"]
-            let this = convertToHTML entry thisFile
+            thisFile <- liftIO $ readFile thisFilePath
+            let thisWithMarkup = fileContentToHtml LiterateHaskell thisFile
+            let this = withBlogHeader [thisWithMarkup]
             lift . ok . toResponse =<< siteTemplate hs [this]
         _  -> lift . notFound . toResponse $ ()
 
@@ -259,8 +252,9 @@ Finally we glue this all together and define the only function we have to
 export for the main module to work.
 
 \begin{code}
-site :: Site Sitemap (ReaderT Options (ServerPartT IO) Response)
-site = setDefault Home $ boomerangSite (runRouteT route) sitemap
+site :: Blog
+     -> Site Sitemap (ReaderT StaticResrouceDirectory (ServerPartT IO) Response)
+site b = setDefault Home $ boomerangSite (runRouteT (route b)) sitemap
 \end{code}
 
 This example may have been way more complicated than using Happstack directly

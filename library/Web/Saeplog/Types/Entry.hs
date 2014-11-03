@@ -71,30 +71,53 @@ newtype RelativePath = RelativePath { getRelativePath :: FilePath }
 -- | Newtype for 'FilePath'
 newtype FullPath = FullPath { getFullPath :: FilePath }
     deriving (Eq, Ord, Show, Read, Data, Typeable)
+-- | Newtype for 'Integer'
+newtype Index = Index { getIndex :: Integer }
+    deriving (Eq, Ord, Show, Read, Data, Typeable)
+-- | Newtype for 'EntryUpdate'
+newtype LastUpdate = LastUpdate { getLastUpdate :: EntryUpdate }
+    deriving (Eq, Ord, Show, Read, Data, Typeable)
+
+
 
 -- | Metadata for a blog entry.
 data Entry = Entry
-    { _title        :: Text
+    { _entryId      :: Integer
+    -- ^ Unique blog entry id
+    , _title        :: Text
+    -- ^ Title of a blog entry (may change over time)
     , _author       :: Text
+    -- ^ Author of the blog entry
     , _authorEmail  :: Text
+    -- ^ Email of the author
     , _tags         :: Set Text
+    -- ^ Tags associated with the entry
     , _fileType     :: FileType
+    -- ^ File type of the actual file (determined by extension)
     , _relativePath :: FilePath
+    -- ^ Path of the actual content file relative to the blog entry repository
+    -- definition
     , _fullPath     :: FilePath
+    -- ^ Full path of the content file
     , _updates      :: IxSet EntryUpdate
+    -- ^ Indexable set of update times to the entry
+    , _lastUpdate   :: EntryUpdate
+    -- ^ The latest update to the entry
     }
     deriving (Eq, Ord, Show, Read, Data, Typeable)
 makeLenses ''Entry
 
 instance Indexable Entry where
     empty = ixSet
-        [ ixFun $ \e -> [ Title $ e^.title ]
+        [ ixFun $ \e -> [ Index $ e^.entryId ]
+        , ixFun $ \e -> [ Title $ e^.title ]
         , ixFun $ \e -> [ AuthorName $ e^.author ]
         , ixFun $ \e -> [ AuthorEmail $ e^.authorEmail ]
         , ixFun $ \e -> [ e^.fileType ]
         , ixFun $ \e -> [ RelativePath $ e^.relativePath ]
         , ixFun $ \e -> [ FullPath $ e^.fullPath ]
         , ixFun $ \e -> toDescList (Proxy :: Proxy EntryUpdate) (e^.updates)
+        , ixFun $ \e -> [ LastUpdate $ e^.lastUpdate ]
         ]
 
 

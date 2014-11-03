@@ -9,48 +9,57 @@ Stability   :  experimental
 
 -}
 module Web.Saeplog.Blog
-    ( module Web.Saeplog.Crawler
-    , BlogConfig
-    , initBlog
-    , createBlogEntries
+    ( withBlog
+    , blogEntries
+    , Blog
     ) where
 
-import Control.Applicative
-import Control.Lens
-import Control.Monad
-import Control.Monad.Reader
-import Data.Default
-import Data.Function
-import Data.IxSet            (toList, toSet)
-import Data.List (sortBy)
-import qualified Data.Set as Set
-import Text.Blaze.Html5      as H
-import Web.Saeplog.Converter
-import Web.Saeplog.Crawler   (collectEntryData)
-import Web.Saeplog.Types
+import           Control.Applicative
+import           Control.Concurrent
+import           Control.Concurrent.STM
+import           Control.Lens
+import           Control.Monad
+import           Control.Monad.Reader
+import           Data.FileStore
+import qualified Data.IxSet             as IxSet
+import           Data.Time
+import           Happstack.Server       (Response, ServerPartT, look, ok,
+                                         toResponse)
+import           Text.Blaze.Html        (Html, toHtml)
+import           Web.Saeplog.Blog.State hiding (Blog)
+import qualified Web.Saeplog.Blog.State as Internal
+import           Web.Saeplog.Types
 
--- | Dummy value for now. Might read some special configuration from the blog
--- contents repository in the future.
-data BlogConfig = BlogConfig
-    { entries :: [Html]
-    }
+newtype Blog = Blog { getBlog :: Maybe (TVar Internal.Blog) }
 
-instance Default BlogConfig where
-    def = BlogConfig []
+withBlog :: Maybe FilePath -> (Blog -> IO ()) -> IO ()
+withBlog Nothing action = action (Blog Nothing)
+withBlog (Just ep) action = do
+    mb <- Internal.initBlog ep
+    case mb of
+        Nothing -> action $ Blog Nothing
+        Just b -> do
+            tb <- atomically $ newTVar b
+            action $ Blog (Just tb)
 
-initBlog :: (MonadIO io) => FilePath -> io (Maybe BlogConfig)
-initBlog fp = do
-    es <- collectEntryData fp
-    md <- liftIO $ forM (toList es) $ \e -> do
-        fc <- readFile (e^.fullPath)
-        return (e, fc)
-    let md' = sortBy (flip compare `on` (Set.findMax . toSet . _updates . fst)) md
-    let blogEntries = fmap (uncurry convertToHTML) md'
-    return $ Just (BlogConfig blogEntries)
+blogEntries :: Blog -> ServerPartT IO [Html]
+blogEntries (Blog Nothing) = mzero
+blogEntries (Blog (Just tb)) = do
+    luc <- view lastUpdateCheck <$> liftIO (readTVarIO tb)
+    now <- liftIO getCurrentTime
+    when (fromEnum (diffUTCTime now luc) > 10 * 60 * 10^12) $ do
+        liftIO . atomically . modifyTVar tb $ lastUpdateCheck .~ now
+        b <- liftIO $ readTVarIO tb
+        let lu = Just . entryUpdateTime $ b^.lastEntryUpdate
+            lur = entryRevisionId $ b^.lastEntryUpdate
+        rs <- liftIO $ (history (b^.fileStore)) [] (TimeRange lu Nothing) Nothing
+        -- FIXME saep 2014-11-03 implement the incremental update by refactoring
+        -- the Web.Saeplog.Crawler.Repository module
+        return ()
 
-createBlogEntries :: (Functor m, Monad m)
-          => Getting BlogConfig cfg BlogConfig
-          -> ReaderT cfg m [Html]
-createBlogEntries bcfg = entries <$> view bcfg
+    eId <- optional $ look "id"
+    b <- liftIO $ readTVarIO tb
+    -- XXX saep 2014-11-03 Ordering is somewhat random
+    flip runReaderT b $ mapM renderEntry . reverse . map _entryId $ IxSet.toList (b^.entries)
 
 

@@ -11,16 +11,16 @@ Stability   :  experimental
 -}
 module Main where
 
-import           Control.Lens
-import           Control.Monad.IO.Class
-import           Data.Maybe
-import           Data.Text              (pack)
-import           Example
-import           Happstack.Server       (Conf (port), notFound, nullConf,
-                                         toResponse)
-import           Options.Applicative
-import           Web.Routes.Happstack   (implSite)
-import qualified Web.Saeplog.Server     as Server
+import Control.Monad.IO.Class
+import Control.Monad.Reader
+import Data.Maybe
+import Data.Monoid
+import Data.Text              (pack)
+import Example
+import Happstack.Server       (Conf (port), notFound, nullConf, toResponse, simpleHTTP)
+import Options.Applicative
+import Web.Routes.Happstack   (implSite)
+import Web.Saeplog.Blog
 
 data BlogOptions = BlogOptions
     { blogEntryRepository      :: Maybe FilePath
@@ -60,15 +60,11 @@ main = do
     let siteAddress = pack $ fromMaybe "http://127.0.0.1:8000" (address args)
         sitePort    = fromMaybe 8000 $ listenPort args
 
-    let conf = Server.def
-            & Server.happstackConf .~ nullConf { port = sitePort }
-            & Server.blogEntryRepository .~ blogEntryRepository args
-            & Server.staticResourcesDirectory .~ staticResourcesDirectory args
-
-    liftIO $ Server.start conf
-        [ implSite siteAddress "" site
-        , notFound $ toResponse ()
-        ]
+    withBlog (blogEntryRepository args) $ \b -> do
+        liftIO $ simpleHTTP (nullConf { port = sitePort }) $ msum
+            [ flip runReaderT (staticResourcesDirectory args) $ implSite siteAddress "" (site b)
+            , notFound $ toResponse ()
+            ]
 
   where
     opts = info (helper <*> blogOptions)
