@@ -38,15 +38,16 @@ convertToHTML ed fileContent =
                 H.span $ (fmtTime . entryUpdateTime . Set.findMax . toSet) (ed^.updates)
                 br
                 H.span $ toHtml $ "by " <> ed^.author
-            writeHtml defaultWriter $ case ed^.fileType of
-                PandocMarkdown ->
-                    readMarkdown (def
-                    { readerExtensions = pandocExtensions })
-                    fileContent
-                LiterateHaskell ->
-                    readMarkdown (def
-                    { readerExtensions = Ext_literate_haskell `Set.insert` pandocExtensions })
-                    fileContent
+            H.article $
+                writeHtml defaultWriter $ case ed^.fileType of
+                    PandocMarkdown ->
+                        readMarkdown (def
+                        { readerExtensions = pandocExtensions })
+                        fileContent
+                    LiterateHaskell ->
+                        readMarkdown (def
+                        { readerExtensions = Ext_literate_haskell `Set.insert` pandocExtensions })
+                        fileContent
 
 -- | Default 'WriterOptions' for the converters.
 defaultWriter :: WriterOptions
