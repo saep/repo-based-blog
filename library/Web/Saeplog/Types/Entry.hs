@@ -88,13 +88,13 @@ makeLenses ''Entry
 
 instance Indexable Entry where
     empty = ixSet
-        [ ixFun $ \e -> [ Title $ _title e ]
-        , ixFun $ \e -> [ AuthorName $ _author e ]
-        , ixFun $ \e -> [ AuthorEmail $ _authorEmail e ]
-        , ixFun $ \e -> [ _fileType e ]
-        , ixFun $ \e -> [ RelativePath $ _relativePath e ]
-        , ixFun $ \e -> [ FullPath $ _fullPath e ]
-        , ixFun $ \e -> toDescList (Proxy :: Proxy EntryUpdate) (_updates e)
+        [ ixFun $ \e -> [ Title $ e^.title ]
+        , ixFun $ \e -> [ AuthorName $ e^.author ]
+        , ixFun $ \e -> [ AuthorEmail $ e^.authorEmail ]
+        , ixFun $ \e -> [ e^.fileType ]
+        , ixFun $ \e -> [ RelativePath $ e^.relativePath ]
+        , ixFun $ \e -> [ FullPath $ e^.fullPath ]
+        , ixFun $ \e -> toDescList (Proxy :: Proxy EntryUpdate) (e^.updates)
         ]
 
 
