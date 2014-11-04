@@ -4,7 +4,9 @@ module Web.Saeplog.Crawler.RepositorySpec
 
 import Web.Saeplog.Crawler.Repository
 import Web.Saeplog.Types
+import Web.Saeplog.Types.Blog
 
+import Control.Lens
 import Control.Monad.Trans.Except
 import Data.FileStore
 import Data.IxSet
@@ -22,8 +24,8 @@ isRight _ = False
 instance Show FileStore where
     show _ = "FileStore dummy"
 
-instance Show FileStoreData where
-    show _ = "FileStoreData dummy"
+instance Show Blog where
+    show _ = "Blog dummy"
 
 spec :: Spec
 spec = do
@@ -54,28 +56,28 @@ spec = do
             fs `shouldSatisfy` isRight
 
         it "should find a commit with the message \"Initial Commit\"" $ do
-            Right fsd <- runExceptT (initializeFileStore "test-resources")
-            rev <- revision (fileStore fsd) "52114b620cf80ee01501417cfaf698c035437915"
+            Right (_,crp,fs) <- runExceptT (initializeFileStore "test-resources")
+            rev <- revision fs "52114b620cf80ee01501417cfaf698c035437915"
             revDescription rev `shouldBe` "Initial commit"
 
-            contentRelativePath fsd `shouldBe` "test-resources"
+            crp `shouldBe` "test-resources"
 
     describe "collectEntryData" $ do
         it "should match this test case" $ do
-            Right (_, entries) <- collectEntryData "test-resources"
+            Right b <- runExceptT $ initBlog "test-resources"
 
-            size entries `shouldBe` 2
+            size (b^.entries) `shouldBe` 2
 
-            size (entries @= AuthorName "Sebastian Witte")
+            size ((b^.entries) @= AuthorName "Sebastian Witte")
                 `shouldBe` 2
 
-            map _fileType (toList entries)
+            map _fileType (toList (b^.entries))
                 `shouldBe` [ PandocMarkdown, LiterateHaskell ]
-            map _relativePath (toList entries)
+            map _relativePath (toList (b^.entries))
                 `shouldBe` [ "test-resources/toplevel.md"
                            , "test-resources/nested/test/file.lhs" ]
 
-            (sort . map (size . _updates) . toList) entries
+            (sort . map (size . _updates) . toList) (b^.entries)
                 `shouldBe` [1,2]
 
 

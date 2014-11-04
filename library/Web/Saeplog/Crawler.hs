@@ -14,5 +14,5 @@ module Web.Saeplog.Crawler
     ) where
 
 import Web.Saeplog.Crawler.MetaParser (Meta (..), parseMeta)
-import Web.Saeplog.Crawler.Repository (collectEntryData)
+import Web.Saeplog.Crawler.Repository (initBlog, updateBlog)
 

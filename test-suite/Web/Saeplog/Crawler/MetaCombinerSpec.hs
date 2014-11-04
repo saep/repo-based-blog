@@ -4,9 +4,7 @@ module Web.Saeplog.Crawler.MetaCombinerSpec
 
 import           Control.Applicative
 import           Control.Lens                     hiding (elements)
-import           Data.Default
 import qualified Data.IxSet                       as IxSet
-import qualified Data.Map                         as Map
 import           Data.Monoid
 import           Data.Set                         (Set)
 import qualified Data.Set                         as Set
@@ -16,7 +14,6 @@ import           System.FilePath                  ((</>))
 import           Web.Saeplog.Crawler.MetaCombiner as M
 import           Web.Saeplog.Crawler.MetaParser   as M
 import           Web.Saeplog.Types.Entry
-import           Web.Saeplog.Types.FileType
 import           Web.Saeplog.Types.FileType
 
 import Test.Hspec      as Test
@@ -86,8 +83,8 @@ instance Arbitrary Meta where
 spec :: Spec
 spec = do
     let t = UTCTime (ModifiedJulianDay 1337) (picosecondsToDiffTime 42)
-        eu = EntryUpdate t "foo"
-        mdMock = Entry
+    let eu = EntryUpdate t "foo"
+    let mdMock = Entry
             { _entryId = 7
             , _title = "title"
             , _author = "me"
@@ -142,32 +139,34 @@ spec = do
                   in contract Nothing meta mempty `shouldBe` mempty
 
         it "should match the case 1" $ do
-            let p = "/some/path/Foo Bar"
+            let p = md1^.relativePath
                 meta = [ M.Context p
                        , M.Tags [(TagReplace, "foo"), (TagAdd, "quz")]
                        , M.Title "Foo Bar"
                        , M.Tags [(TagAdd, "bar")]
                        ]
-            contract Nothing meta (Map.singleton p mdMock)
-                `shouldBe` Map.singleton p md1
+            contract Nothing meta (IxSet.fromList [mdMock])
+                `shouldBe` IxSet.fromList [md1]
 
         it "should match the case 2" $ do
-            let p = "/bla/blubb"
+            let p = md2^.relativePath
+                md = mdMock & relativePath .~ p
                 meta = [ M.Title "Quz"
                        , M.Tags [(TagAdd, "three")]
                        , M.Tags [(TagAdd, "one")]
                        , M.Tags [(TagAdd, "two")]
                        , M.Tags [(TagRemove, "three")]
                        ]
-            contract (Just p) meta (Map.singleton p mdMock)
-                `shouldBe` Map.singleton p md2
+            contract (Just p) meta (IxSet.fromList [md])
+                `shouldBe` IxSet.fromList [md2]
 
         it "should match the case 3" $ do
-            let p = "some/relative/path/to/a/file"
+            let p = md3^.relativePath
+                md = mdMock & relativePath .~ p
                 meta = [ M.Title "bar"
                        , M.Tags [(TagReplace, "only one")]
                        , M.Title "title"
                        ]
-            contract (Just p) meta (Map.singleton p mdMock)
-                `shouldBe` Map.singleton p md3
+            contract (Just p) meta (IxSet.fromList [md])
+                `shouldBe` IxSet.fromList [md3]
 

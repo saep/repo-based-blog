@@ -15,30 +15,34 @@ module Web.Saeplog.Blog
     ) where
 
 import           Control.Applicative
-import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Lens
 import           Control.Monad
+import           Control.Monad.Except
 import           Control.Monad.Reader
 import           Data.FileStore
 import qualified Data.IxSet             as IxSet
 import           Data.Time
-import           Happstack.Server       (Response, ServerPartT, look, ok,
-                                         toResponse)
-import           Text.Blaze.Html        (Html, toHtml)
-import           Web.Saeplog.Blog.State hiding (Blog)
-import qualified Web.Saeplog.Blog.State as Internal
+import           Happstack.Server       (ServerPartT, look)
+import           System.IO
+import           Text.Blaze.Html        (Html)
+import           Web.Saeplog.Converter
+import           Web.Saeplog.Crawler
 import           Web.Saeplog.Types
+import           Web.Saeplog.Types.Blog hiding (Blog)
+import qualified Web.Saeplog.Types.Blog as Internal
 
 newtype Blog = Blog { getBlog :: Maybe (TVar Internal.Blog) }
 
 withBlog :: Maybe FilePath -> (Blog -> IO ()) -> IO ()
 withBlog Nothing action = action (Blog Nothing)
 withBlog (Just ep) action = do
-    mb <- Internal.initBlog ep
+    mb <- runExceptT $ initBlog ep
     case mb of
-        Nothing -> action $ Blog Nothing
-        Just b -> do
+        Left err -> do
+            hPutStrLn stderr err
+            action $ Blog Nothing
+        Right b -> do
             tb <- atomically $ newTVar b
             action $ Blog (Just tb)
 

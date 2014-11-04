@@ -78,8 +78,6 @@ newtype Index = Index { getIndex :: Integer }
 newtype LastUpdate = LastUpdate { getLastUpdate :: EntryUpdate }
     deriving (Eq, Ord, Show, Read, Data, Typeable)
 
-
-
 -- | Metadata for a blog entry.
 data Entry = Entry
     { _entryId      :: Integer

@@ -13,99 +13,119 @@ module Web.Saeplog.Crawler.Repository
     where
 
 import           Control.Applicative
+import           Control.Concurrent.STM
 import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
-import           Control.Monad.Trans.Class
+import           Control.Monad.State
 import           Control.Monad.Trans.Except
 import           Data.FileStore                   (Change (..), FileStore,
                                                    Revision (..),
                                                    darcsFileStore, gitFileStore,
-                                                   mercurialFileStore,
-                                                   searchRevisions)
+                                                   mercurialFileStore)
 import qualified Data.FileStore                   as FS
-import           Data.Function                    (on)
 import           Data.IxSet
-import           Data.List                        (sortBy)
-import           Data.Map                         (Map)
-import qualified Data.Map                         as Map
+import qualified Data.IxSet                       as IxSet
 import           Data.Maybe
 import           Data.Monoid
 import           Data.Text                        (pack)
+import           Data.Time
 import           System.Directory
 import           System.FilePath
 import           Web.Saeplog.Crawler.MetaCombiner as C
 import           Web.Saeplog.Crawler.MetaParser
 import           Web.Saeplog.Types                as E
+import           Web.Saeplog.Types.Blog
+import           Web.Saeplog.Util
 
--- | Search recursively in the given directory for blog entries.
-collectEntryData :: (MonadIO io) => FilePath -> io (Either String (FileStore, IxSet Entry))
-collectEntryData dir = do
-    efs <- runExceptT $ initializeFileStore dir
-    case efs of
-        Left err -> return $ Left err
-        Right fsd -> do
-            es <- createEntryDataFromFileStore fsd
-            return $ Right (fileStore fsd, es)
+-- | Initialize the 'Blog' state by providing a path inside a repository.
+initBlog :: (Functor io, MonadIO io) => FilePath -> ExceptT String io Blog
+initBlog fp = do
+    b <- initialBlog
+    collectEntryData Nothing b
 
--- | Search through all revisions and create and update the 'EntryData' fields
--- that shoud be returned'.
-createEntryDataFromFileStore :: (MonadIO io)
-                             => FileStoreData -> io (IxSet Entry)
-createEntryDataFromFileStore fsd = do
-    rs <- liftIO $ searchRevisions
-            (fileStore fsd) False (contentRelativePath fsd) ""
-    return . fromList . Map.elems . collect fsd 1 mempty
-           $ sortBy (compare `on` revDateTime) rs
-
-collect :: FileStoreData -> Integer -> Map FilePath Entry -> [Revision] -> Map FilePath Entry
-collect _ _ fpMap [] = fpMap
-collect fsd eId fpMap (r:rs) =
-    let (eId',m') = foldr go (eId,fpMap) (revChanges r)
-    in collect fsd eId' m' rs
   where
-    go (Added fp) (i,m) = case fileTypeFromExtension fp of
-        Nothing -> (i,m)
-        Just ft ->
-            let meta = (either (const []) id . parseMeta . revDescription) r
-                upd  = EntryUpdate (revDateTime r) (revId r)
-                m' = contract (Just fp) meta $ Map.insert fp Entry
-                        { _entryId      = i
-                        , E._title      = (pack . takeBaseName . dropExtensions) fp
-                        , _author       = (pack . FS.authorName . revAuthor) r
-                        , _authorEmail  = (pack . FS.authorEmail . revAuthor) r
-                        , E._tags       = mempty
-                        , _fileType     = ft
-                        , _relativePath = fp
-                        , _fullPath     = repositoryPath fsd </> fp
-                        , _updates      = fromList [upd]
-                        , _lastUpdate   = upd
-                        } m
-            in (succ i,m')
+    initialBlog :: (Functor io, MonadIO io) => ExceptT String io Blog
+    initialBlog = do
+        (rp, crp, fs) <- initializeFileStore fp
+        Blog <$> pure 1
+             <*> pure mempty
+             <*> pure (EntryUpdate (UTCTime (ModifiedJulianDay 0) 0) "")
+             <*> liftIO getCurrentTime
+             <*> pure fs
+             <*> (liftIO . atomically . newTVar) mempty
+             <*> pure rp
+             <*> pure crp
 
-    go (Modified fp) acc =
-        let t = EntryUpdate (revDateTime r) (revId r)
-            f e = e & updates %~ insert t & lastUpdate .~ t
-        in Map.adjust f fp <$> acc
+-- | Update the entries in the 'Blog' state.
+updateBlog :: (Functor io, MonadIO io) => Blog -> ExceptT String io Blog
+updateBlog blog = collectEntryData (Just (blog^.lastEntryUpdate)) blog
 
-    go (Deleted fp) acc = fmap (Map.delete fp) acc
+collectEntryData :: (Functor io, MonadIO io)
+                 => Maybe EntryUpdate -- initial (Nothing) or update?
+                 -> Blog
+                 -> ExceptT String io Blog
+collectEntryData eu blog =
+    let interval = FS.TimeRange (entryUpdateTime <$> eu) Nothing
+        fs = blog^.fileStore
+        hist = FS.history fs
+        notLatestKnownEntry = case entryRevisionId <$> eu of
+            Nothing -> const True
+            Just commit -> not . FS.idsMatch fs commit . revId
+    in foldr collect blog . takeWhile notLatestKnownEntry
+        <$> liftIO (hist [blog^.contentRelativePath] interval Nothing)
 
--- | Helper data type for vaiu passing.
-data FileStoreData = FSD
-    { repositoryPath      :: FilePath
-    -- ^ Absolute path to the repository
-    , contentRelativePath :: FilePath
-    -- ^ Path for the content relative to the repository
-    , fileStore           :: FileStore
-    -- ^ Thu 'FileStore' for the repository
-    }
+collect :: Revision -> Blog -> Blog
+collect r blog = foldr go blog (revChanges r)
+  where
+    go (Added fp) b = maybe b (addEntry r b fp) $ fileTypeFromExtension fp
+    go (Modified fp) b = maybe b (modEntry r b fp) $ fileTypeFromExtension fp
+    go (Deleted fp) b = b & entries %~ IxSet.deleteIx (RelativePath fp)
+
+metaFromRevision :: Revision -> [Meta]
+metaFromRevision = either (const []) id . parseMeta . revDescription
+
+addEntry :: Revision -> Blog -> FilePath -> FileType -> Blog
+addEntry r blog fp ft =
+    let meta = metaFromRevision r
+        eu  = EntryUpdate (revDateTime r) (revId r)
+        newEntry = Entry
+                { _entryId      = blog^.nextEntryId
+                , E._title      = (pack . takeBaseName . dropExtensions) fp
+                , _author       = (pack . FS.authorName . revAuthor) r
+                , _authorEmail  = (pack . FS.authorEmail . revAuthor) r
+                , E._tags       = mempty
+                , _fileType     = ft
+                , _relativePath = fp
+                , _fullPath     = blog^.repositoryPath </> fp
+                , _updates      = fromList [eu]
+                , _lastUpdate   = eu
+                }
+    in blog & nextEntryId %~ succ
+            & entries     %~ contract (Just fp) meta . IxSet.insert newEntry
+
+modEntry :: Revision -> Blog -> FilePath -> FileType -> Blog
+modEntry r blog fp _ =
+    let meta = metaFromRevision r
+        eu = EntryUpdate (revDateTime r) (revId r)
+        insertUpdateTime = ixSetModifyIx (RelativePath fp) $ \e ->
+                            e & updates %~ IxSet.insert eu
+                              & lastUpdate .~ eu
+    in blog & entries %~ contract (Just fp) meta . insertUpdateTime
 
 -- | Initialize a 'FileStore' object for the given directory. This function
 -- should automatically detect the underlying repository type and traverse into
 -- parent directories if necessary. The result is the associated 'FileStore'
 -- object together with the relative path relative to the repository for the
 -- blog content.
-initializeFileStore :: (MonadIO io) => FilePath -> ExceptT String io FileStoreData
+--
+-- The return value is a triplet containing:
+-- * The absolute path to the repository
+-- * The content relative path inside the repository
+-- * The associated 'FileStore' object for the repository
+initializeFileStore :: (Functor io, MonadIO io)
+                    => FilePath
+                    -> ExceptT String io (FilePath, FilePath, FileStore)
 initializeFileStore dir = do
     cd <- liftIO $ canonicalizePath dir
     d <- liftIO $ doesDirectoryExist cd
@@ -130,15 +150,13 @@ initializeFileStore dir = do
     maybeDarcs     = maybeFileStore darcsFileStore "_darcs"
     maybeMercurial = maybeFileStore mercurialFileStore ".hg"
 
--- | Helper funtction to search for a (supported) repository containing blog
--- entries.
-maybeFileStore :: (MonadIO io)
-               => (FilePath -> FileStore)
-               -> FilePath -- ^ The directory to search for
-               -> FilePath -- ^ The directory to start traversing (canonicalized)
-               -> io (Maybe FileStoreData)
-maybeFileStore f qry cd =
-    fmap (\p -> FSD cd (makeRelative p cd) (f p)) `liftM` findDirInParents cd qry
+    maybeFileStore :: (Functor io, MonadIO io)
+                   => (FilePath -> FileStore)
+                   -> FilePath
+                   -> FilePath
+                   -> io (Maybe (FilePath, FilePath, FileStore))
+    maybeFileStore f qry cd =
+        fmap (\p -> (cd, makeRelative p cd, f p)) <$> findDirInParents cd qry
 
 -- | Search for a directory named as the second argument to thins function.
 -- Traverse the directory tree up to the root if the directory cannot be found

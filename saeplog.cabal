@@ -81,9 +81,10 @@ library
   other-modules:        Web.Saeplog.Crawler.Repository,
                         Web.Saeplog.Crawler.MetaParser,
                         Web.Saeplog.Crawler.MetaCombiner,
-                        Web.Saeplog.Blog.State,
+                        Web.Saeplog.Types.Blog,
                         Web.Saeplog.Types.Entry,
-                        Web.Saeplog.Types.FileType
+                        Web.Saeplog.Types.FileType,
+                        Web.Saeplog.Util
 
 test-suite hspec
   type:                 exitcode-stdio-1.0
@@ -106,6 +107,7 @@ test-suite hspec
                         lens,
                         mtl,
                         parsec >=3,
+                        stm,
                         text,
                         time,
                         transformers,

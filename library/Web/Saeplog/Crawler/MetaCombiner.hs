@@ -14,8 +14,8 @@ module Web.Saeplog.Crawler.MetaCombiner
 
 import           Control.Lens                   hiding (Context)
 import           Control.Monad.State
-import           Data.Map                       (Map)
-import qualified Data.Map                       as Map
+import           Data.IxSet                     hiding (null)
+import qualified Data.IxSet                     as IxSet
 import           Data.Monoid
 import           Data.Set                       (Set)
 import qualified Data.Set                       as Set
@@ -25,14 +25,15 @@ import           Web.Saeplog.Types.Entry
 
 data MetaDataContractionState = S
     { _context     :: Maybe FilePath
-    , _metaDataMap :: Map FilePath Entry
+    , _metaDataMap :: IxSet Entry
     }
 makeLenses ''MetaDataContractionState
 
-contract :: Maybe FilePath
-         -> [Meta]
-         -> Map FilePath Entry
-         -> Map FilePath Entry
+-- | Add the given meta information to the giten 'IxSet'.
+contract :: Maybe FilePath -- ^ Content relative path for an 'Entry'
+         -> [Meta]         -- ^ Parsed meta information to add
+         -> IxSet Entry    -- ^ Original entry 'IxSet'
+         -> IxSet Entry
 contract initialContext meta m =
     let initialState = S initialContext m
     in execState (mapM_ contract' meta) initialState ^. metaDataMap
@@ -45,7 +46,14 @@ contract' meta = maybe (return ()) (updateMetaData meta) =<< use context
 updateMetaDataMap :: FilePath
                   -> (Entry -> Entry)
                   -> State MetaDataContractionState ()
-updateMetaDataMap c f = metaDataMap %= Map.alter (fmap f) c
+updateMetaDataMap c f = do
+    m <- use metaDataMap
+    let ixC = RelativePath c
+    case getOne $ m @= ixC of
+        Nothing -> return ()
+        Just e -> do
+            metaDataMap %= IxSet.deleteIx ixC
+            metaDataMap %= IxSet.insert (f e)
 
 updateMetaData :: Meta -> FilePath -> State MetaDataContractionState ()
 updateMetaData meta c = case meta of
