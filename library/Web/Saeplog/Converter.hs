@@ -37,11 +37,15 @@ import           Text.Pandoc.Readers.Markdown
 import           Text.Pandoc.Writers.HTML
 import           Web.Saeplog.Types.Blog
 
+-- | Render the page with the given identifier from the blog context. Will
+-- print a minimal error page if the identifier does not point to a valid blog
+-- entry.
 renderEntry :: (Functor io, MonadIO io) => Integer -> ReaderT Blog io Html
 renderEntry j = do
-    cache <- liftIO . readTVarIO =<< view blogEntryCache
+    cache <- view blogEntryCache
     maybe putInCache return $ Map.lookup j cache
   where
+    -- TODO saep 2014-11-05 nicer error page
     errorPage = return . toHtml $ "Entry with the given id '"<>show j<>"' not found."
 
     putInCache = do
@@ -50,10 +54,12 @@ renderEntry j = do
             Nothing -> errorPage
             Just e -> do
                 h <- convertToHTML e <$> liftIO (readFile (e^.fullPath))
-                cache <- view blogEntryCache
-                liftIO . atomically . modifyTVar cache $ Map.insert j h
+                c <- view blogCacheChannel
+                liftIO . atomically $ writeTChan c (j,h)
                 return h
 
+-- | Converter function that choses an appropriate pandoc configuration for the
+-- given 'FileType' and converts the given 'String' to 'Html'.
 fileContentToHtml :: FileType -> String -> Html
 fileContentToHtml ft fileContent = writeHtml defaultWriter $ case ft of
     PandocMarkdown ->
@@ -65,6 +71,8 @@ fileContentToHtml ft fileContent = writeHtml defaultWriter $ case ft of
         { readerExtensions = Ext_literate_haskell `Set.insert` pandocExtensions })
         fileContent
 
+-- | Wrap the given 'Html' fragments inside a:
+-- @<div class="blog-with-metadata"><section class="blog"> Html params </section></div>@
 withBlogHeader :: [Html] -> Html
 withBlogHeader es =
     H.div ! class_ "blog-with-metadata" $

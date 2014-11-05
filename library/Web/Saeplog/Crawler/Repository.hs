@@ -32,7 +32,7 @@ import           Data.Text                        (pack)
 import           Data.Time
 import           System.Directory
 import           System.FilePath
-import           Web.Saeplog.Crawler.MetaCombiner as C
+import           Web.Saeplog.Crawler.MetaCombiner
 import           Web.Saeplog.Crawler.MetaParser
 import           Web.Saeplog.Types                as E
 import           Web.Saeplog.Types.Blog
@@ -53,7 +53,8 @@ initBlog fp = do
              <*> pure (EntryUpdate (UTCTime (ModifiedJulianDay 0) 0) "")
              <*> liftIO getCurrentTime
              <*> pure fs
-             <*> (liftIO . atomically . newTVar) mempty
+             <*> pure mempty
+             <*> (liftIO . atomically) newTChan
              <*> pure rp
              <*> pure crp
 

@@ -79,6 +79,7 @@ library
                         Web.Saeplog.Types
 
   other-modules:        Web.Saeplog.Crawler.Repository,
+                        Web.Saeplog.Blog.Query,
                         Web.Saeplog.Crawler.MetaParser,
                         Web.Saeplog.Crawler.MetaCombiner,
                         Web.Saeplog.Types.Blog,
