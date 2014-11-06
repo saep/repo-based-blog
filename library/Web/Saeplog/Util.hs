@@ -22,6 +22,8 @@ import           Data.IxSet
 import           Data.IxSet          as ReExport (IxSet)
 import qualified Data.IxSet          as IxSet
 import           Data.Maybe          as ReExport
+import           Data.Text           as ReExport (Text, pack)
+import           Text.Blaze.Html5    as ReExport (Html)
 
 -- | Modify the unique value indexable by @k@. If there ir no value or if there
 -- are multiple values for the given index, the 'IxSet' is unmodified.
@@ -30,3 +32,4 @@ ixSetModifyIx :: (Ord a, Typeable a, IxSet.Indexable a, Typeable k)
 ixSetModifyIx k f is = case getOne $ is @= k of
     Nothing -> is
     Just a  -> insert (f a) $ delete a is
+
