@@ -83,7 +83,7 @@ manageEntryUpdates tb = do
   where
     updateUpdateTime :: UTCTime -> UTCTime -> STM Bool
     updateUpdateTime now luc
-        | diffUTCTime now luc > 6 {- seconds -} = do
+        | diffUTCTime now luc > 600 {- seconds -} = do
             modifyTVar tb $ lastUpdateCheck .~ now
             return True
         | otherwise = return False
