@@ -71,11 +71,11 @@ spec = do
             size ((b^.entries) @= AuthorName "Sebastian Witte")
                 `shouldBe` 2
 
-            map _fileType (toList (b^.entries))
-                `shouldBe` [ PandocMarkdown, LiterateHaskell ]
-            map _relativePath (toList (b^.entries))
-                `shouldBe` [ "test-resources/toplevel.md"
-                           , "test-resources/nested/test/file.lhs" ]
+            sort (map _fileType (toList (b^.entries)))
+                `shouldBe` sort [ PandocMarkdown, LiterateHaskell ]
+            sort (map _relativePath (toList (b^.entries)))
+                `shouldBe` sort [ "test-resources/toplevel.md"
+                                , "test-resources/nested/test/file.lhs" ]
 
             (sort . map (size . _updates) . toList) (b^.entries)
                 `shouldBe` [1,2]

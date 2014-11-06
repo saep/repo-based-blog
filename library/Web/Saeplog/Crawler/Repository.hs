@@ -26,6 +26,7 @@ import           Data.FileStore                   (Change (..), FileStore,
 import qualified Data.FileStore                   as FS
 import           Data.IxSet
 import qualified Data.IxSet                       as IxSet
+import           Data.List                        (sortBy, foldl')
 import           Data.Maybe
 import           Data.Monoid
 import           Data.Time
@@ -72,15 +73,15 @@ collectEntryData eu blog =
         notLatestKnownEntry = case entryRevisionId <$> eu of
             Nothing -> const True
             Just commit -> not . FS.idsMatch fs commit . revId
-    in foldr collect blog . reverse . takeWhile notLatestKnownEntry
+    in foldl' collect blog . takeWhile notLatestKnownEntry . sortBy (compare `on` revDateTime)
         <$> liftIO (hist [blog^.contentRelativePath] interval Nothing)
 
-collect :: Revision -> Blog -> Blog
-collect r blog = foldr go blog (revChanges r)
+collect :: Blog -> Revision -> Blog
+collect blog r = foldl' go blog (revChanges r)
   where
-    go (Added fp) b = maybe b (addEntry r b fp) $ fileTypeFromExtension fp
-    go (Modified fp) b = maybe b (modEntry r b fp) $ fileTypeFromExtension fp
-    go (Deleted fp) b = b & entries %~ IxSet.deleteIx (RelativePath fp)
+    go b (Added fp) = maybe b (addEntry r b fp) $ fileTypeFromExtension fp
+    go b (Modified fp) = maybe b (modEntry r b fp) $ fileTypeFromExtension fp
+    go b (Deleted fp) = b & entries %~ IxSet.deleteIx (RelativePath fp)
                           & lastEntryUpdate .~ EntryUpdate (revDateTime r) (revId r)
 
 metaFromRevision :: Revision -> [Meta]
@@ -113,7 +114,7 @@ modEntry r blog fp _ =
         insertUpdateTime = ixSetModifyIx (RelativePath fp) $ \e ->
                             e & updates %~ IxSet.insert eu
                               & lastUpdate .~ eu
-    in blog & entries %~ contract (Just fp) meta . insertUpdateTime
+    in blog & entries %~ (contract (Just fp) meta . insertUpdateTime)
             & lastEntryUpdate .~ eu
 
 -- | Initialize a 'FileStore' object for the given directory. This function
