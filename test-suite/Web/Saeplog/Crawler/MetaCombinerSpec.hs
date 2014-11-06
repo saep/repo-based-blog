@@ -78,7 +78,7 @@ instance Arbitrary Meta where
             _ | i == 0 -> M.Tags <$> arbitrary
             _ | i == 1 -> M.Title <$> arbitrary
             _ | i == 2 -> M.Context . filter noNewline <$> arbitrary
-            _ -> None <$> arbitrary
+            _ -> return None
 
 spec :: Spec
 spec = do

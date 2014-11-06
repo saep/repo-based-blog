@@ -75,10 +75,6 @@ spec = parallel $ do
             it "should parse the case without newlines" $ do
                 parseMeta "taG:+\"'bar mit'zwa\" foo -quz'"
                     `shouldBe` complexCase'
-            it "should parse the case with newlines everywhere" $ do
-                parseMeta "tAgS:\n+\"'bar mit'zwa\"\n \nfoo     \n -quz'\n\n\n"
-                    `shouldBe` complexCase'
-
 
         context "title" $ do
             it "should handle an eof terminated single line case" $ do
@@ -99,5 +95,24 @@ spec = parallel $ do
                 parseMeta "context  :foo bar quz" `shouldBe` result
                 parseMeta "context:foo bar quz" `shouldBe` result
                 parseMeta "context:foo\nbar\nquz\n\n" `shouldBe` result
+
+        context "regression test" $ do
+            it "should handle the regression case" $ do
+                let str = concat
+                        [ "abc def g h i jklmnop \n\n"
+                        , "qrstuv wxyz\n\n"
+                        , "Title: some things came up\n\n"
+                        , "Tags: a b c d"
+                        ]
+                    result = Right [ None
+                                   , None
+                                   , Title "some things came up"
+                                   , Tags [ (TagReplace, "a")
+                                          , (TagReplace, "b")
+                                          , (TagReplace, "c")
+                                          , (TagReplace, "d")
+                                         ]
+                                   ]
+                parseMeta str `shouldBe` result
 
 

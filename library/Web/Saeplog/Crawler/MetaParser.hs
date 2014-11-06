@@ -28,7 +28,7 @@ data Meta =
     -- ^ Context entry, usually a relative path for the blog entry repository.
     --
     -- There is no validity check performed.
-    | None String
+    | None
     -- ^ Everything that is not a tag quantified in pieces of text followed by
     -- two newlines or the end of input.
     deriving (Eq, Show)
@@ -55,13 +55,31 @@ ciString = mapM ciChar
 -- | Parse meta data from the given 'String'. The order of the list items is
 -- the same as the order in which the meta data appears in the input.
 parseMeta :: String -> Either ParseError [Meta]
-parseMeta = parse (many pMeta) "Meta data parser"
+parseMeta inp =
+    parse (many pSplice) "slice" (inp++"\n\n")
+        >>= mapM (parse pMeta "meta parser") . filter (not . all isSpace)
+
+pSplice :: Parsec String u String
+pSplice = blankLines
+    <|> unwords . words . unlines <$> many1 (notFollowedBy blankLine *> anyLine)
+
+skipSpaces :: Parsec String u ()
+skipSpaces = skipMany $ char ' ' <|> char '\t'
+
+blankLine :: Parsec String u Char
+blankLine = skipSpaces *> newline
+
+blankLines :: Parsec String u String
+blankLines = many1 blankLine
+
+anyLine :: Parsec String u String
+anyLine = skipSpaces *> (anyChar `manyTill` newline)
 
 pMeta :: Parsec String u Meta
 pMeta = try pTags <|> try pTitle <|> try pContext <|> pNone
 
 pNone :: Parsec String u Meta
-pNone = (\x xs -> None (x:xs)) <$> anyChar <*> anyChar `manyTill` pEOFOrEmptyLine
+pNone = const None <$> many1 anyChar
 
 -- $tag
 --
@@ -98,13 +116,7 @@ pQuantifierPrefix = quantify <$> (try (char '+') <|> try (char '-') <|> pure '='
         | otherwise = TagReplace
 
 pSpaceElements :: Parsec String u [(TagQuantifier, Text)]
-pSpaceElements = pSpaceDelimitedElement `manyTill` pEOFOrEmptyLine
-
-pEOFOrEmptyLine :: Parsec String u ()
-pEOFOrEmptyLine = try (pNewLine <* many1 pNewLine) <|> eof
-
-pNewLine :: Parsec String u ()
-pNewLine = void $ endOfLine *> endOfLine
+pSpaceElements = many pSpaceDelimitedElement
 
 pSpaceDelimitedElement :: Parsec String u (TagQuantifier, Text)
 pSpaceDelimitedElement = (\q t -> (q, pack t))
@@ -115,7 +127,7 @@ pSpaceDelimitedElement = (\q t -> (q, pack t))
                  <*> anyChar `manyTill` tryEndOfTag))
 
 tryEndOfTag :: Parsec String u ()
-tryEndOfTag = try (void space <|> pEOFOrEmptyLine) *> spaces
+tryEndOfTag = (try (void space) *> spaces) <|> eof
 
 -- $title
 -- A title is a String delimited by 2 newlines or the end of input. Newlines
@@ -126,10 +138,10 @@ tryEndOfTag = try (void space <|> pEOFOrEmptyLine) *> spaces
 pTitle :: Parsec String u Meta
 pTitle = Title . pack . unwords
     <$> (try (ciString "title") *> spaces *> char ':' *> spaces
-    *> many ((:) <$> anyChar <*> anyChar `manyTill` tryEndOfTag) <* pEOFOrEmptyLine)
+    *> many ((:) <$> anyChar <*> anyChar `manyTill` tryEndOfTag))
 
 pContext :: Parsec String u Meta
 pContext = Context . unwords
     <$> (try (ciString "context") *> spaces *> char ':' *> spaces
-    *> many ((:) <$> anyChar <*> anyChar `manyTill` tryEndOfTag) <* pEOFOrEmptyLine)
+    *> many ((:) <$> anyChar <*> anyChar `manyTill` tryEndOfTag))
 

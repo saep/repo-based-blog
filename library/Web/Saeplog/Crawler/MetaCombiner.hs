@@ -40,7 +40,7 @@ contract initialContext meta m =
 
 contract' :: Meta -> State MetaDataContractionState ()
 contract' (Context c) = context .= Just c
-contract' (None    _) = return ()
+contract' None = return ()
 contract' meta = maybe (return ()) (updateMetaData meta) =<< use context
 
 updateMetaDataMap :: FilePath
