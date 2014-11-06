@@ -83,6 +83,7 @@ library
                         Web.Saeplog.Crawler.MetaParser,
                         Web.Saeplog.Crawler.MetaCombiner,
                         Web.Saeplog.Types.Blog,
+                        Web.Saeplog.Types.CachedEntry,
                         Web.Saeplog.Types.Entry,
                         Web.Saeplog.Types.FileType,
                         Web.Saeplog.Util

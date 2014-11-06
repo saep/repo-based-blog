@@ -48,18 +48,14 @@ import Web.Saeplog.Types as T
 
 import Control.Applicative
 import Control.Category
-import Control.Lens
 import Control.Monad.Reader
 import Data.Data                   (Data, Typeable)
 import Data.Monoid
 import Data.Text                   (Text, unpack)
 import Happstack.Server
 import Data.Maybe
-import Data.IxSet                  (fromList)
-import Data.Time                   (getCurrentTime)
 import Prelude                     hiding (id, (.))
 import System.Directory
-import System.FilePath             hiding ((</>))
 import Text.Blaze.Html5            as H
 import Text.Blaze.Html5.Attributes as A hiding (dir, start, id)
 import Text.Boomerang              hiding ((.~))
@@ -216,7 +212,8 @@ configured to via command line parameter and beyond the purpose of this article.
 serveBlog :: Blog
           -> RouteT Sitemap (ReaderT StaticResrouceDirectory (ServerPartT IO)) Response
 serveBlog blog = do
-    entries <- lift . lift $ blogEntries blog
+    blogRoute <- showURL Blog
+    entries <- lift . lift $ blogEntries blogRoute blog
     blogMarkup <- siteTemplate hs entries
     lift . ok . toResponse $ blogMarkup
   where

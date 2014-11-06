@@ -12,13 +12,13 @@ Stability   :  experimental
 module Web.Saeplog.Types.Blog
     where
 
-import Control.Concurrent.STM  (TChan)
+import Control.Concurrent.STM        (TChan)
 import Control.Lens
-import Data.FileStore          (FileStore)
-import Data.IxSet              (IxSet)
-import Data.Map                (Map)
-import Data.Time               (UTCTime)
-import Text.Blaze.Html5        (Html)
+import Data.FileStore                (FileStore)
+import Data.IxSet                    (IxSet)
+import Data.Map                      (Map)
+import Data.Time                     (UTCTime)
+import Web.Saeplog.Types.CachedEntry
 import Web.Saeplog.Types.Entry
 
 data Blog = Blog
@@ -27,8 +27,8 @@ data Blog = Blog
     , _lastEntryUpdate     :: EntryUpdate
     , _lastUpdateCheck     :: UTCTime
     , _fileStore           :: FileStore
-    , _blogEntryCache      :: Map Integer Html
-    , _blogCacheChannel    :: TChan (Integer, Html)
+    , _blogEntryCache      :: Map Integer CachedEntry
+    , _blogCacheChannel    :: TChan (Integer, CachedEntry)
     , _repositoryPath      :: FilePath
     , _contentRelativePath :: FilePath
     }

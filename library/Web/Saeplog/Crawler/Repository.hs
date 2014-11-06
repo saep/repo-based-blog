@@ -28,7 +28,6 @@ import           Data.IxSet
 import qualified Data.IxSet                       as IxSet
 import           Data.Maybe
 import           Data.Monoid
-import           Data.Text                        (pack)
 import           Data.Time
 import           System.Directory
 import           System.FilePath
@@ -73,7 +72,7 @@ collectEntryData eu blog =
         notLatestKnownEntry = case entryRevisionId <$> eu of
             Nothing -> const True
             Just commit -> not . FS.idsMatch fs commit . revId
-    in foldr collect blog . takeWhile notLatestKnownEntry
+    in foldr collect blog . reverse . takeWhile notLatestKnownEntry
         <$> liftIO (hist [blog^.contentRelativePath] interval Nothing)
 
 collect :: Revision -> Blog -> Blog
@@ -82,6 +81,7 @@ collect r blog = foldr go blog (revChanges r)
     go (Added fp) b = maybe b (addEntry r b fp) $ fileTypeFromExtension fp
     go (Modified fp) b = maybe b (modEntry r b fp) $ fileTypeFromExtension fp
     go (Deleted fp) b = b & entries %~ IxSet.deleteIx (RelativePath fp)
+                          & lastEntryUpdate .~ EntryUpdate (revDateTime r) (revId r)
 
 metaFromRevision :: Revision -> [Meta]
 metaFromRevision = either (const []) id . parseMeta . revDescription
@@ -104,6 +104,7 @@ addEntry r blog fp ft =
                 }
     in blog & nextEntryId %~ succ
             & entries     %~ contract (Just fp) meta . IxSet.insert newEntry
+            & lastEntryUpdate .~ eu
 
 modEntry :: Revision -> Blog -> FilePath -> FileType -> Blog
 modEntry r blog fp _ =
@@ -113,6 +114,7 @@ modEntry r blog fp _ =
                             e & updates %~ IxSet.insert eu
                               & lastUpdate .~ eu
     in blog & entries %~ contract (Just fp) meta . insertUpdateTime
+            & lastEntryUpdate .~ eu
 
 -- | Initialize a 'FileStore' object for the given directory. This function
 -- should automatically detect the underlying repository type and traverse into

@@ -128,6 +128,20 @@ a.meta {
 	color:#bdccd3;
 }
 
+div.meta-table {
+	color:#bdccd3;
+	float:none;
+	max-width:25rem;
+	margin:auto;
+	background:#293134;
+	border-radius:0.15rem;
+	border-color:#ec7600;
+	border-style:dashed;
+	border-width:0.1em;
+	padding:0.5em;
+	text-align:right;
+}
+
 blockquote {
 	color:#bdccd3;
 }
