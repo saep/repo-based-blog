@@ -3,6 +3,7 @@ module Web.Saeplog.Crawler.RepositorySpec
     where
 
 import Web.Saeplog.Crawler.Repository
+import Web.Saeplog.Templates.Default
 import Web.Saeplog.Types
 import Web.Saeplog.Types.Blog
 
@@ -64,7 +65,7 @@ spec = do
 
     describe "collectEntryData" $ do
         it "should match this test case" $ do
-            Right b <- runExceptT $ initBlog "test-resources"
+            Right b <- runExceptT $ initBlog $ createDefaultBlogConfig "test-resources" "."
 
             size (b^.entries) `shouldBe` 2
 

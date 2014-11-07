@@ -40,7 +40,6 @@ library
                         mtl,
                         lens,
                         old-locale,
-                        optparse-applicative,
                         pandoc >=1.12.3.3,
                         parsec >=3,
                         stm,
@@ -49,7 +48,7 @@ library
                         transformers
 
   exposed-modules:      Web.Saeplog,
-                        Web.Saeplog.Templates.Saep,
+                        Web.Saeplog.Templates.Default,
                         Web.Saeplog.Blog,
                         Web.Saeplog.Config,
                         Web.Saeplog.Converter,
@@ -86,6 +85,7 @@ test-suite hspec
                         ixset,
                         lens,
                         mtl,
+                        old-locale,
                         parsec >=3,
                         stm,
                         text,

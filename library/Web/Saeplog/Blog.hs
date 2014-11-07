@@ -18,31 +18,32 @@ import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Monad.Except
 import           Control.Monad.Reader
-import qualified Data.IxSet             as IxSet
-import           Data.List              (sortBy)
-import qualified Data.Map               as Map
+import qualified Data.IxSet                    as IxSet
+import           Data.List                     (sortBy)
+import qualified Data.Map                      as Map
 import           Data.Time
-import           Happstack.Server       (ServerPartT)
+import           Happstack.Server              (ServerPartT)
+import           System.Exit                   (exitFailure)
 import           System.IO
 import           Web.Saeplog.Blog.Query
+import           Web.Saeplog.Config
 import           Web.Saeplog.Converter
 import           Web.Saeplog.Crawler
 import           Web.Saeplog.Types
+import           Web.Saeplog.Types.Blog        hiding (Blog)
+import qualified Web.Saeplog.Types.Blog        as Internal
 import           Web.Saeplog.Types.CachedEntry
-import           Web.Saeplog.Types.Blog hiding (Blog)
-import qualified Web.Saeplog.Types.Blog as Internal
 import           Web.Saeplog.Util
 
 newtype Blog = Blog (Maybe (TVar Internal.Blog))
 
-withBlog :: Maybe FilePath -> (Blog -> IO ()) -> IO ()
-withBlog Nothing action = action (Blog Nothing)
-withBlog (Just ep) action = do
-    mb <- runExceptT $ initBlog ep
+withBlog :: BlogConfig -> (Blog -> IO ()) -> IO ()
+withBlog cfg action = do
+    mb <- runExceptT $ initBlog cfg
     case mb of
         Left err -> do
             hPutStrLn stderr err
-            action $ Blog Nothing
+            exitFailure
         Right b -> do
             tb <- atomically $ newTVar b
             _ <- forkIO $ manageEntryCache tb (b^.blogCacheChannel)
@@ -51,39 +52,38 @@ withBlog (Just ep) action = do
 -- TODO saep 2014-11-05 Document those (e.g. exposing Web.Saeplog.Blog.Query)
 -- | Generate a list of blog entries. The size and order of the list is
 -- determined by the supplied request data.
-blogEntries :: Text -> Blog -> ServerPartT IO [Html]
-blogEntries _ (Blog Nothing) = mzero
-blogEntries baseURL (Blog (Just tb)) = do
+blogEntries :: Blog -> ServerPartT IO Html
+blogEntries (Blog Nothing) = mzero
+blogEntries (Blog (Just tb)) = do
     _ <- liftIO . forkIO $ manageEntryUpdates tb
     b <- liftIO $ readTVarIO tb
     qry <- parseQueryRqData
     case eqId qry of
-        Just i -> flip runReaderT b $ sequence
-            [ renderEntry baseURL (def & withMetaBox .~ False
-                                       & withMetaTable .~ True) i
-            ]
+        Just i -> renderEntries b (Left [i])
         Nothing -> do
             let es = sortBy (eqSortBy qry) $ IxSet.toList (b^.entries)
-            flip runReaderT b $ forM es $
-                \e -> renderEntry baseURL def (e^.entryId)
+            renderEntries b (Right es)
 
+-- | On a site rendering request, test whether the entry repository should
+-- check for updates.
 manageEntryUpdates :: TVar Internal.Blog -> IO ()
 manageEntryUpdates tb = do
-    luc <- view lastUpdateCheck <$> liftIO (readTVarIO tb)
+    b <- liftIO $ readTVarIO tb
+    let luc = b^.lastUpdateCheck
     now <- liftIO getCurrentTime
-
-    shouldCheckForUpdate <- liftIO . atomically $ updateUpdateTime now luc
+    let interval = max 1 . fromInteger . updateInterval $ b^.blogConfig
+    shouldCheckForUpdate <- liftIO . atomically $ updateUpdateTime now luc interval
     when shouldCheckForUpdate $ do
-        b <- liftIO $ readTVarIO tb
-        u <- runExceptT $ updateBlog b
+        blog <- liftIO $ readTVarIO tb
+        u <- runExceptT $ updateBlog blog
         case u of
             Left err -> hPutStrLn stderr err
-            Right b' -> liftIO . atomically $ writeTVar tb b'
+            Right blog' -> liftIO . atomically $ writeTVar tb blog'
 
   where
-    updateUpdateTime :: UTCTime -> UTCTime -> STM Bool
-    updateUpdateTime now luc
-        | diffUTCTime now luc > 600 {- seconds -} = do
+    updateUpdateTime :: UTCTime -> UTCTime -> NominalDiffTime-> STM Bool
+    updateUpdateTime now luc interval
+        | diffUTCTime now luc > interval * 60 {- seconds -} = do
             modifyTVar tb $ lastUpdateCheck .~ now
             return True
         | otherwise = return False

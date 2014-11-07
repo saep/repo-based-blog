@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {- |
 Module      :  Web.Saeplog.Config
 Description :  Basic configuration for a blog
@@ -12,24 +13,31 @@ module Web.Saeplog.Config
     ( BlogConfig(..)
     ) where
 
-import Data.Text         (Text)
-import Text.Blaze.Html5  (Html)
-import Web.Saeplog.Types
+import           Data.Text                     (Text)
+import           Data.Time                     (UTCTime)
+import           Text.Blaze.Html5              (Html)
+import           Web.Saeplog.Types
 
 data BlogConfig = BlogConfig
-    { entryRenderer         :: Entry -> Html
+    { baseURL        :: Text
+    -- ^ URL at which the blog is accessible.
+    --
+    --  Default <http://127.0.0.1:8000/blog>
+    , entryRenderer  :: BlogConfig -> [(Entry, Html)] -> Html
     -- ^ This entry describes how the content of a blog entry is being
-    -- rendered.
+    -- rendered. The 'Html' content is the blog content rendered with the
+    -- pandoc library.
     --
     -- $entrySettings
-    , metainfoBoxRenderer   :: Entry -> Html
-    -- ^ This function describes how a small meta info box should be rendered.
-    -- This is the ideal candidate for
-    , metainfoTableRenderer :: Entry -> Html
-    , resourcesPath         :: Text
-    , cssFileName           :: Text
-    , errorMessage          :: Maybe String
-    -- ^ Used by the dyre wrapper
+    , timeFormatter  :: UTCTime -> Text
+    , entryPath      :: FilePath
+    -- ^ Path to the repository that contains the blog entries.
+    --
+    -- The path may as well point to a directory within a repository.
+    , resourcesPath  :: FilePath
+    , updateInterval :: Integer
+    -- ^ Interval in minutes at which the entry repository should be queried for
+    -- new content. Will default to 10 for entries smaller than 1.
     }
 
 {-| $entrySettings

@@ -12,8 +12,10 @@ module Web.Saeplog
     ( saeplog
     , module Web.Saeplog.Config
     , module Web.Saeplog.Blog
+    , module Web.Saeplog.Templates.Default
     ) where
 
-import Web.Saeplog.Config (BlogConfig (entryRenderer, metainfoBoxRenderer, metainfoTableRenderer, resourcesPath, cssFileName))
-import Web.Saeplog.Blog (Blog, withBlog, blogEntries)
-import Web.Saeplog.Main (saeplog)
+import Web.Saeplog.Blog              (Blog, blogEntries, withBlog)
+import Web.Saeplog.Config            (BlogConfig (..))
+import Web.Saeplog.Main              (saeplog)
+import Web.Saeplog.Templates.Default (createDefaultBlogConfig)

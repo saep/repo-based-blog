@@ -26,12 +26,13 @@ import           Data.FileStore                   (Change (..), FileStore,
 import qualified Data.FileStore                   as FS
 import           Data.IxSet
 import qualified Data.IxSet                       as IxSet
-import           Data.List                        (sortBy, foldl')
+import           Data.List                        (foldl')
 import           Data.Maybe
 import           Data.Monoid
 import           Data.Time
 import           System.Directory
 import           System.FilePath
+import           Web.Saeplog.Config
 import           Web.Saeplog.Crawler.MetaCombiner
 import           Web.Saeplog.Crawler.MetaParser
 import           Web.Saeplog.Types                as E
@@ -39,15 +40,15 @@ import           Web.Saeplog.Types.Blog
 import           Web.Saeplog.Util
 
 -- | Initialize the 'Blog' state by providing a path inside a repository.
-initBlog :: (Functor io, MonadIO io) => FilePath -> ExceptT String io Blog
-initBlog fp = do
+initBlog :: (Functor io, MonadIO io) => BlogConfig -> ExceptT String io Blog
+initBlog bcfg = do
     b <- initialBlog
     collectEntryData Nothing b
 
   where
     initialBlog :: (Functor io, MonadIO io) => ExceptT String io Blog
     initialBlog = do
-        (rp, crp, fs) <- initializeFileStore fp
+        (rp, crp, fs) <- initializeFileStore (entryPath bcfg)
         Blog <$> pure 1
              <*> pure mempty
              <*> pure (EntryUpdate (UTCTime (ModifiedJulianDay 0) 0) "")
@@ -57,6 +58,7 @@ initBlog fp = do
              <*> (liftIO . atomically) newTChan
              <*> pure rp
              <*> pure crp
+             <*> pure bcfg
 
 -- | Update the entries in the 'Blog' state.
 updateBlog :: (Functor io, MonadIO io) => Blog -> ExceptT String io Blog

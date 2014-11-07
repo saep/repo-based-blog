@@ -18,6 +18,7 @@ import Data.FileStore                (FileStore)
 import Data.IxSet                    (IxSet)
 import Data.Map                      (Map)
 import Data.Time                     (UTCTime)
+import Web.Saeplog.Config
 import Web.Saeplog.Types.CachedEntry
 import Web.Saeplog.Types.Entry
 
@@ -31,6 +32,7 @@ data Blog = Blog
     , _blogCacheChannel    :: TChan (Integer, CachedEntry)
     , _repositoryPath      :: FilePath
     , _contentRelativePath :: FilePath
+    , _blogConfig          :: BlogConfig
     }
 makeLenses ''Blog
 

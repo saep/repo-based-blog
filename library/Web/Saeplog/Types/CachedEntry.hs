@@ -16,9 +16,7 @@ import Web.Saeplog.Types
 import Web.Saeplog.Util
 
 data CachedEntry = CachedEntry
-    { _metainfoBox     :: Html
-    , _metainfoTable   :: Html
-    , _entry           :: Html
+    { _entry           :: Html
     , _cacheLastUpdate :: EntryUpdate
     , _cacheEntryData  :: Entry
     }

@@ -22,7 +22,9 @@ import           Data.IxSet
 import           Data.IxSet          as ReExport (IxSet)
 import qualified Data.IxSet          as IxSet
 import           Data.Maybe          as ReExport
+import           Data.Monoid         as ReExport
 import           Data.Text           as ReExport (Text, pack)
+import           Data.Time           as ReExport (UTCTime)
 import           Text.Blaze.Html5    as ReExport (Html)
 
 -- | Modify the unique value indexable by @k@. If there ir no value or if there
