@@ -79,7 +79,7 @@ renderEntry baseURL ropt j = do
         es <- view entries
         case (mce, getOne $ es @= Index j) of
             (_,Nothing) -> return Nothing
-            (Just ce, Just e) | ((==) `on` updateTime) (ce^.cEntry) e -> return $ Just ce
+            (Just ce, Just e) | ((==) `on` updateTime) (ce^.cacheEntryData) e -> return $ Just ce
             (_, Just e) -> do
                 en <- convertToHTML e <$> liftIO (readFile (e^.fullPath))
                 let mb = renderMetaBox baseURL ropt e
@@ -94,12 +94,12 @@ renderEntry baseURL ropt j = do
 renderCachedEntry :: Text -> RenderOptions -> Maybe CachedEntry -> Html
 renderCachedEntry _ _ Nothing = toHtml $ pack "Page not Found"
 renderCachedEntry baseURL ropt (Just ce) =
-    withBlogHeader $ catMaybes [mb,mt,Just (ce^.cEntryMarkup)]
+    withBlogHeader $ catMaybes [mb,mt,Just (ce^.entry)]
   where
     mb = do guard (ropt^.withMetaBox)
-            Just $ renderMetaBox baseURL ropt (ce^.cEntry)
+            Just $ renderMetaBox baseURL ropt (ce^.cacheEntryData)
     mt = do guard (ropt^.withMetaTable)
-            Just $ renderMetaTable ropt (ce^.cEntry)
+            Just $ renderMetaTable ropt (ce^.cacheEntryData)
 
 -- | Converter function that choses an appropriate pandoc configuration for the
 -- given 'FileType' and converts the given 'String' to 'Html'.

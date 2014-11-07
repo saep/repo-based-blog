@@ -73,16 +73,16 @@ collectEntryData eu blog =
         notLatestKnownEntry = case entryRevisionId <$> eu of
             Nothing -> const True
             Just commit -> not . FS.idsMatch fs commit . revId
-    in foldl' collect blog . takeWhile notLatestKnownEntry . sortBy (compare `on` revDateTime)
+    in foldr collect blog . takeWhile notLatestKnownEntry -- . sortBy (compare `on` revDateTime)
         <$> liftIO (hist [blog^.contentRelativePath] interval Nothing)
 
-collect :: Blog -> Revision -> Blog
-collect blog r = foldl' go blog (revChanges r)
+collect :: Revision -> Blog -> Blog
+collect r blog = foldl' go blog (revChanges r)
   where
-    go b (Added fp) = maybe b (addEntry r b fp) $ fileTypeFromExtension fp
+    go b (Added fp)    = maybe b (addEntry r b fp) $ fileTypeFromExtension fp
     go b (Modified fp) = maybe b (modEntry r b fp) $ fileTypeFromExtension fp
-    go b (Deleted fp) = b & entries %~ IxSet.deleteIx (RelativePath fp)
-                          & lastEntryUpdate .~ EntryUpdate (revDateTime r) (revId r)
+    go b (Deleted fp)  = b & entries %~ IxSet.deleteIx (RelativePath fp)
+                           & lastEntryUpdate .~ EntryUpdate (revDateTime r) (revId r)
 
 metaFromRevision :: Revision -> [Meta]
 metaFromRevision = either (const []) id . parseMeta . revDescription

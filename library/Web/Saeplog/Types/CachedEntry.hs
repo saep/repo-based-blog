@@ -16,10 +16,10 @@ import Web.Saeplog.Types
 import Web.Saeplog.Util
 
 data CachedEntry = CachedEntry
-    { _cMetaBox     :: Html
-    , _cMetaTable   :: Html
-    , _cEntryMarkup :: Html
-    , _cLastUpdate  :: EntryUpdate
-    , _cEntry       :: Entry
+    { _metainfoBox     :: Html
+    , _metainfoTable   :: Html
+    , _entry           :: Html
+    , _cacheLastUpdate :: EntryUpdate
+    , _cacheEntryData  :: Entry
     }
 makeLenses ''CachedEntry
