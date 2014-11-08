@@ -46,7 +46,7 @@ renderEntries blog is = do
         let c = blog^.blogEntryCache
             es = blog^.entries
         in either
-            (map (\i -> (Map.lookup i c, getOne (es @= i), i)))
+            (map (\i -> (Map.lookup i c, getOne (es @= Index i), i)))
             (map (\e -> let eid = (e^.entryId) in (Map.lookup eid c, Just e, eid)))
 
     manageCache :: (Functor io, MonadIO io)
