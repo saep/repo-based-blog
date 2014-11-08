@@ -75,5 +75,7 @@ columns: 80
 language_extensions:
   - RecordWildCards
   - CPP
+  - FlexibleContexts
+  - MultiParamTypeClasses
   # - TemplateHaskell
   # - QuasiQuotes

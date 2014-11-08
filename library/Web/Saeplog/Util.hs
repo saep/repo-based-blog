@@ -16,6 +16,7 @@ module Web.Saeplog.Util
 import           Control.Applicative as ReExport
 import           Control.Lens        as ReExport
 import           Control.Monad       as ReExport
+import           Control.Monad.Base  as ReExport (MonadBase)
 import           Data.Data           as ReExport (Typeable)
 import           Data.Function       as ReExport (on)
 import           Data.IxSet

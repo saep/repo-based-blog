@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {- |
 Module      :  Web.Saeplog.Converter
@@ -19,7 +20,7 @@ module Web.Saeplog.Converter
 import           Control.Applicative
 import           Control.Concurrent.STM
 import           Control.Lens
-import           Control.Monad.IO.Class
+import           Control.Monad.Base
 import           Control.Monad.Reader
 import           Data.Default
 import           Data.IxSet                    as IxSet
@@ -34,34 +35,35 @@ import           Web.Saeplog.Types.Blog
 import           Web.Saeplog.Types.CachedEntry as E
 import           Web.Saeplog.Util
 
-renderEntries :: (Functor io, MonadIO io)
-              => Blog -> Either [Integer] [Entry] -> io Html
+-- | Given a bunch of entries and a 'Blog'
+renderEntries :: (MonadBase IO io) => Blog -> Either [Integer] [Entry] -> io Html
 renderEntries blog is = do
     cachedEntries <- foldM manageCache [] $ select is
     let bcfg = blog^.blogConfig
     return . entryRenderer bcfg bcfg $ reverse cachedEntries
   where
-    select :: Either [Integer] [Entry] -> [(Maybe CachedEntry, Maybe Entry, Integer)]
+    select :: Either [Integer] [Entry] -> [(Maybe CachedEntry, Maybe Entry)]
     select =
         let c = blog^.blogEntryCache
             es = blog^.entries
         in either
-            (map (\i -> (Map.lookup i c, getOne (es @= Index i), i)))
-            (map (\e -> let eid = (e^.entryId) in (Map.lookup eid c, Just e, eid)))
+            (map (\i -> (Map.lookup i c, getOne (es @= Index i))))
+            (map (\e -> (Map.lookup (e^.entryId) c, Just e)))
 
-    manageCache :: (Functor io, MonadIO io)
+    manageCache :: (MonadBase IO io)
                 => [(Entry, Html)]
-                -> (Maybe CachedEntry, Maybe Entry, Integer)
+                -> (Maybe CachedEntry, Maybe Entry)
                 -> io [(Entry, Html)]
     manageCache acc ie =
         case ie of
-            (_,Nothing, _) -> return acc
-            (Just ce, Just e, _) | ((==) `on` updateTime) (ce^.cacheEntryData) e
+            (_,Nothing) -> return acc
+            (Just ce, Just e) | ((==) `on` updateTime) (ce^.cacheEntryData) e
                         -> return $ (ce^.cacheEntryData, ce^.entry) : acc
-            (_, Just e, i) -> do
-                en <- convertToHTML e <$> liftIO (readFile (e^.fullPath))
+            (_, Just e) -> do
+                en <- convertToHTML e <$> liftBase (readFile (e^.fullPath))
                 let h = CachedEntry en (e^.lastUpdate) e
-                liftIO . atomically $ writeTChan (blog^.blogCacheChannel) (i,h)
+                liftBase . atomically $
+                    writeTChan (blog^.blogCacheChannel) (e^.entryId, h)
                 return $ (e, en) : acc
       where
         updateTime e = entryUpdateTime (e^.lastUpdate)

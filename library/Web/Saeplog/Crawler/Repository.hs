@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {- |
 Module      :  Web.Saeplog.Crawler
 Description :  Implementation of a meta data collector for the blog entry
@@ -16,7 +17,6 @@ import           Control.Applicative
 import           Control.Concurrent.STM
 import           Control.Lens
 import           Control.Monad
-import           Control.Monad.IO.Class
 import           Control.Monad.State
 import           Control.Monad.Trans.Except
 import           Data.FileStore                   (Change (..), FileStore,
@@ -38,33 +38,34 @@ import           Web.Saeplog.Crawler.MetaParser
 import           Web.Saeplog.Types                as E
 import           Web.Saeplog.Types.Blog
 import           Web.Saeplog.Util
+import Control.Monad.Base
 
 -- | Initialize the 'Blog' state by providing a path inside a repository.
-initBlog :: (Functor io, MonadIO io) => BlogConfig -> ExceptT String io Blog
+initBlog :: (MonadBase IO io) => BlogConfig -> ExceptT String io Blog
 initBlog bcfg = do
     b <- initialBlog
     collectEntryData Nothing b
 
   where
-    initialBlog :: (Functor io, MonadIO io) => ExceptT String io Blog
+    initialBlog :: (MonadBase IO io) => ExceptT String io Blog
     initialBlog = do
         (rp, crp, fs) <- initializeFileStore (entryPath bcfg)
         Blog <$> pure 1
              <*> pure mempty
              <*> pure (EntryUpdate (UTCTime (ModifiedJulianDay 0) 0) "")
-             <*> liftIO getCurrentTime
+             <*> liftBase getCurrentTime
              <*> pure fs
              <*> pure mempty
-             <*> (liftIO . atomically) newTChan
+             <*> (liftBase . atomically) newTChan
              <*> pure rp
              <*> pure crp
              <*> pure bcfg
 
 -- | Update the entries in the 'Blog' state.
-updateBlog :: (Functor io, MonadIO io) => Blog -> ExceptT String io Blog
+updateBlog :: (MonadBase IO io) => Blog -> ExceptT String io Blog
 updateBlog blog = collectEntryData (Just (blog^.lastEntryUpdate)) blog
 
-collectEntryData :: (Functor io, MonadIO io)
+collectEntryData :: (MonadBase IO io)
                  => Maybe EntryUpdate -- initial (Nothing) or update?
                  -> Blog
                  -> ExceptT String io Blog
@@ -76,7 +77,7 @@ collectEntryData eu blog =
             Nothing -> const True
             Just commit -> not . FS.idsMatch fs commit . revId
     in foldr collect blog . takeWhile notLatestKnownEntry -- . sortBy (compare `on` revDateTime)
-        <$> liftIO (hist [blog^.contentRelativePath] interval Nothing)
+        <$> liftBase (hist [blog^.contentRelativePath] interval Nothing)
 
 collect :: Revision -> Blog -> Blog
 collect r blog = foldl' go blog (revChanges r)
@@ -129,12 +130,12 @@ modEntry r blog fp _ =
 -- * The absolute path to the repository
 -- * The content relative path inside the repository
 -- * The associated 'FileStore' object for the repository
-initializeFileStore :: (Functor io, MonadIO io)
+initializeFileStore :: (MonadBase IO io)
                     => FilePath
                     -> ExceptT String io (FilePath, FilePath, FileStore)
 initializeFileStore dir = do
-    cd <- liftIO $ canonicalizePath dir
-    d <- liftIO $ doesDirectoryExist cd
+    cd <- liftBase $ canonicalizePath dir
+    d <- liftBase $ doesDirectoryExist cd
     unless d $ throwE $ "The directory '" ++ cd ++ "' does not exist."
 
     fileStores <- catMaybes `liftM` sequence
@@ -156,7 +157,7 @@ initializeFileStore dir = do
     maybeDarcs     = maybeFileStore darcsFileStore "_darcs"
     maybeMercurial = maybeFileStore mercurialFileStore ".hg"
 
-    maybeFileStore :: (Functor io, MonadIO io)
+    maybeFileStore :: (MonadBase IO io)
                    => (FilePath -> FileStore)
                    -> FilePath
                    -> FilePath
@@ -167,15 +168,15 @@ initializeFileStore dir = do
 -- | Search for a directory named as the second argument to thins function.
 -- Traverse the directory tree up to the root if the directory cannot be found
 -- in one of the starting directory's parent directories.
-findDirInParents :: (MonadIO io) => FilePath -> FilePath -> io (Maybe FilePath)
+findDirInParents :: (MonadBase IO io) => FilePath -> FilePath -> io (Maybe FilePath)
 findDirInParents dir qry = do
-    adir <- normalise `liftM` liftIO (canonicalizePath dir)
+    adir <- normalise `liftM` liftBase (canonicalizePath dir)
     containsQry . takeWhile (not . isDrive) $ iterate takeDirectory adir
 
   where
     containsQry [] = return Nothing
     containsQry (d:ds) = do
-        p <- liftIO $ doesDirectoryExist (d </> qry)
+        p <- liftBase $ doesDirectoryExist (d </> qry)
         case () of
             _ | p -> return $ Just d
             _     -> containsQry ds
