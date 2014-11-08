@@ -16,8 +16,8 @@ module Web.Saeplog.Blog
 
 import           Control.Concurrent
 import           Control.Concurrent.STM
-import           Control.Monad.Except
 import           Control.Monad.Reader
+import           Control.Monad.Trans.Except
 import qualified Data.IxSet                    as IxSet
 import           Data.List                     (sortBy)
 import qualified Data.Map                      as Map
@@ -29,7 +29,6 @@ import           Web.Saeplog.Blog.Query
 import           Web.Saeplog.Config
 import           Web.Saeplog.Converter
 import           Web.Saeplog.Crawler
-import           Web.Saeplog.Types
 import           Web.Saeplog.Types.Blog        hiding (Blog)
 import qualified Web.Saeplog.Types.Blog        as Internal
 import           Web.Saeplog.Types.CachedEntry
