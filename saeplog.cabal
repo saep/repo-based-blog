@@ -45,7 +45,8 @@ library
                         stm,
                         text,
                         time,
-                        transformers
+                        transformers,
+                        transformers-compat
 
   exposed-modules:      Web.Saeplog,
                         Web.Saeplog.Templates.Default,
