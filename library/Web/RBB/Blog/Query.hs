@@ -1,5 +1,5 @@
 {- |
-Module      :  RBP.Blog.Query
+Module      :  RBB.Blog.Query
 Description :  Utlities for creating search queries
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -10,7 +10,7 @@ Stability   :  experimental
 This module provides some functions and data types that can be used to manage
 search and query data for a list of 'Entry' values.
 -}
-module RBP.Blog.Query (
+module RBB.Blog.Query (
     EntryQuery(..),
 
     -- * Sorting
@@ -21,8 +21,8 @@ module RBP.Blog.Query (
     ) where
 
 import Data.Default
-import RBP.Util
-import RBP.Types
+import RBB.Util
+import RBB.Types
 
 
 -- | Simple enum that provides Show and read instances so that a parser can

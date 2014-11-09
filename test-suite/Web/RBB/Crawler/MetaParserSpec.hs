@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
-module RBP.Crawler.MetaParserSpec
+module RBB.Crawler.MetaParserSpec
     where
 
-import RBP.Crawler.MetaParser
+import RBB.Crawler.MetaParser
 
 import Test.Hspec
 

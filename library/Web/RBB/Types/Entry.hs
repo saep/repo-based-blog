@@ -2,7 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {- |
-Module      :  RBP.Types.Entry
+Module      :  RBB.Types.Entry
 Description :  Entry data type definitions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -15,7 +15,7 @@ general contract for the unwrapping function is "get" followed by the data type
 name. These instances are necessary because everything is put into an 'IxSet'
 data structure.
 -}
-module RBP.Types.Entry
+module RBB.Types.Entry
     where
 
 import Data.Data                       (Data, Typeable)
@@ -25,7 +25,7 @@ import Data.Function                   (on)
 import Data.IxSet
 import Data.Set (Set)
 import Data.Text                       (Text)
-import RBP.Types.FileType
+import RBB.Types.FileType
 
 -- | Newtype around a 'UTCTime'
 newtype EntryUpdateTime = EntryUpdateTime { getEntryTime :: UTCTime }

@@ -1,5 +1,5 @@
 {- |
-Module      :  RBP.Main
+Module      :  RBB.Main
 Description :  Dyre wrapper
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -8,7 +8,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBP.Main
+module RBB.Main
     ( saeplog
     ) where
 
@@ -19,7 +19,7 @@ import System.IO
 -- the configuration and recompile everything. Simply define your main in
 -- @~/.config/saeplog/saeplog.hs@ as follows:
 --
--- > import RBP
+-- > import RBB
 -- >
 -- > main = saeplog $ do
 -- >     putStrLn "Hello, World!"

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {- |
-Module      :  RBP.Config
+Module      :  RBB.Config
 Description :  Basic configuration for a blog
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,14 +9,14 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBP.Config
+module RBB.Config
     ( BlogConfig(..)
     ) where
 
 import           Data.Text                     (Text)
 import           Data.Time                     (UTCTime)
 import           Text.Blaze.Html5              (Html)
-import           RBP.Types
+import           RBB.Types
 
 -- | Basic configuration of the blog.
 -- The @m@ type variable is just a context in which the functions can operate
@@ -32,7 +32,7 @@ data BlogConfig m = BlogConfig
     -- ^ This field describes how the content of a blog entry is being
     -- rendered. The 'Html' content is the blog content rendered with the
     -- pandoc library. You can take a look at the implementation of the the
-    -- module "RBP.Templates.Default" on how to define this function.
+    -- module "RBB.Templates.Default" on how to define this function.
     --
     , timeFormatter  :: UTCTime -> Text
     -- ^ Function that converts time entries to printable 'Text'.

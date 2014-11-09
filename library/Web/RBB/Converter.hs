@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {- |
-Module      :  RBP.Converter
+Module      :  RBB.Converter
 Description :  Converter functions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -10,7 +10,7 @@ Stability   :  experimental
 
 
 -}
-module RBP.Converter
+module RBB.Converter
     ( convertToHTML
     , fileContentToHtml
     , renderEntries
@@ -27,11 +27,11 @@ import qualified Data.Set                      as Set
 import           Text.Pandoc.Options
 import           Text.Pandoc.Readers.Markdown
 import           Text.Pandoc.Writers.HTML
-import           RBP.Config
-import           RBP.Types             as E
-import           RBP.Types.Blog
-import           RBP.Types.CachedEntry as E
-import           RBP.Util
+import           RBB.Config
+import           RBB.Types             as E
+import           RBB.Types.Blog
+import           RBB.Types.CachedEntry as E
+import           RBB.Util
 
 -- | Given a bunch of entries and a 'Blog'
 renderEntries :: (Functor io, MonadIO io, Monad m)

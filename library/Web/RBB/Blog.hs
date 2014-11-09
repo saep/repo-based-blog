@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {- |
-Module      :  RBP.Blog
+Module      :  RBB.Blog
 Description :  Very experimental Blog-serving facilties
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBP.Blog
+module RBB.Blog
     ( withBlog
     , blogEntries
     , Blog
@@ -26,15 +26,15 @@ import qualified Data.Map                      as Map
 import           Data.Time
 import           System.Exit                   (exitFailure)
 import           System.IO
-import           RBP.Blog.Query
-import           RBP.Config
-import           RBP.Converter         (renderEntries)
-import           RBP.Crawler
-import           RBP.Types.Blog        hiding (Blog)
-import qualified RBP.Types.Blog        as Internal
-import           RBP.Types.CachedEntry
-import           RBP.Types.Entry
-import           RBP.Util
+import           RBB.Blog.Query
+import           RBB.Config
+import           RBB.Converter         (renderEntries)
+import           RBB.Crawler
+import           RBB.Types.Blog        hiding (Blog)
+import qualified RBB.Types.Blog        as Internal
+import           RBB.Types.CachedEntry
+import           RBB.Types.Entry
+import           RBB.Util
 
 -- | A value of this type contains all the data needed for the blog module to
 -- operate.

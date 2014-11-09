@@ -1,5 +1,5 @@
 {- |
-Module      :  RBP.Util
+Module      :  RBB.Util
 Description :  Globally used utility functions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -8,7 +8,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBP.Util
+module RBB.Util
     ( module ReExport
     , ixSetModifyIx
     ) where

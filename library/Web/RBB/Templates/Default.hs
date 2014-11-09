@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {- |
-Module      :  RBP.Templates.Default
+Module      :  RBB.Templates.Default
 Description :  The default blog template
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,16 +9,16 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBP.Templates.Default
+module RBB.Templates.Default
     where
 
 import Data.Time
 import System.Locale
-import qualified RBP.Config as Config
-import RBP.Types.Entry as E
+import qualified RBB.Config as Config
+import RBB.Types.Entry as E
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as A
-import RBP.Util
+import RBB.Util
 import qualified Data.IxSet as IxSet
 import qualified Data.Set as Set
 import qualified Data.Text as Text

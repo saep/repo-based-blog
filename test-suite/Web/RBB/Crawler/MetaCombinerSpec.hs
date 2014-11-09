@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module RBP.Crawler.MetaCombinerSpec
+module RBB.Crawler.MetaCombinerSpec
     where
 
 import           Control.Applicative
@@ -11,10 +11,10 @@ import qualified Data.Set                         as Set
 import           Data.Text                        as T (Text, length, pack)
 import           Data.Time
 import           System.FilePath                  ((</>))
-import           RBP.Crawler.MetaCombiner as M
-import           RBP.Crawler.MetaParser   as M
-import           RBP.Types.Entry
-import           RBP.Types.FileType
+import           RBB.Crawler.MetaCombiner as M
+import           RBB.Crawler.MetaParser   as M
+import           RBB.Types.Entry
+import           RBB.Types.FileType
 
 import Test.Hspec      as Test
 import Test.QuickCheck

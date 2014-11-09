@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
-module RBP.Crawler.RepositorySpec
+module RBB.Crawler.RepositorySpec
     where
 
-import RBP.Crawler.Repository
-import RBP.Templates.Default
-import RBP.Types
-import RBP.Types.Blog
+import RBB.Crawler.Repository
+import RBB.Templates.Default
+import RBB.Types
+import RBB.Types.Blog
 
 import Control.Lens
 import Control.Monad.Trans.Except
