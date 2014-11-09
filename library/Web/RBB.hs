@@ -24,7 +24,7 @@ module Web.RBB (
 
     -- ** XMonad style usage
     -- $example
-    saeplog,
+    rbb,
 
     -- * Entry querying
     -- ** Entry
@@ -56,7 +56,7 @@ module Web.RBB (
 import Data.Default              (Default (..))
 import Web.RBB.Blog              (Blog, blogEntries, getBlogConfig, withBlog)
 import Web.RBB.Config            (BlogConfig (..))
-import Web.RBB.Main              (saeplog)
+import Web.RBB.Main              (rbb)
 import Web.RBB.Templates.Default (createDefaultBlogConfig)
 import Web.RBB.Types.Entry
 import Web.RBB.Types.FileType    (FileType (..))
@@ -84,7 +84,7 @@ import Web.RBB.Types.FileType    (FileType (..))
 -- $example
 --
 -- This example is almost identical to the general usage except for the call of
--- the function 'saeplog'.
+-- the function 'rbb'.
 --
 -- > importWeb.RBB
 -- > -- Other imports such as Web.Routes.Boomerang
@@ -93,7 +93,7 @@ import Web.RBB.Types.FileType    (FileType (..))
 -- >     "/path/to/repository/with/blog/entries"
 -- >     "/path/to/folder/with/static/resources"
 -- >
--- > main = saeplog $ withBlog myBlogConfig $ \blog -> do
+-- > main = rbb $ withBlog myBlogConfig $ \blog -> do
 -- >    putStrLn "Replace this with you web application code."
 --
 

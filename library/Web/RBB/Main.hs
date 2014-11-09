@@ -9,7 +9,7 @@ Stability   :  experimental
 
 -}
 module Web.RBB.Main
-    ( saeplog
+    ( rbb
     ) where
 
 import qualified Config.Dyre as Dyre
@@ -17,16 +17,16 @@ import           System.IO
 
 -- | This function wrapping is needed to let the dyre library detect changes to
 -- the configuration and recompile everything. Simply define your main in
--- @~/.config/saeplog/saeplog.hs@ as follows:
+-- @~/.config/repo-based-blog/rbb.hs@ as follows:
 --
 -- > importWeb.RBB
 -- >
--- > main = saeplog $ do
+-- > main = rbb $ do
 -- >     putStrLn "Hello, World!"
 --
-saeplog :: IO () -> IO ()
-saeplog = Dyre.wrapMain $ Dyre.defaultParams
-    { Dyre.projectName = "saeplog"
+rbb :: IO () -> IO ()
+rbb = Dyre.wrapMain $ Dyre.defaultParams
+    { Dyre.projectName = "repo-based-blog"
     , Dyre.realMain    = id
     , Dyre.showError   = \_ msg -> hPutStrLn stderr msg
     }

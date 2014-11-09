@@ -27,7 +27,8 @@ import Web.RBB.Types
 --
 data BlogConfig m = BlogConfig
     { baseURL        :: m Text
-    -- ^ The base URL of the website such as <https://github.com/saep/saeplog>.
+    -- ^ The base URL of the website such as
+    -- <https://github.com/saep/repo-based-blog>.
     , entryRenderer  :: BlogConfig m -> [(Entry, Html)] -> m Html
     -- ^ This field describes how the content of a blog entry is being
     -- rendered. The 'Html' content is the blog content rendered with the

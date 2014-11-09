@@ -12,10 +12,10 @@ module Main where
 
 import System.Exit
 import System.IO
-import Web.RBB     (saeplog)
+import Web.RBB     (rbb)
 
 main :: IO ()
-main = saeplog $ do
+main = rbb $ do
     mapM_ (hPutStrLn stderr)
         [ ""
         , "You do not seem to have configured your web site at all!"
@@ -26,7 +26,7 @@ main = saeplog $ do
         , ""
         , "To get you started on creating your own website with haskell and"
         , "this blogging library, check out the documentation on github:"
-        , "    https://github.com/saep/saeplog"
+        , "    https://github.com/saep/repo-based-blog"
         , ""
         ]
     exitFailure
