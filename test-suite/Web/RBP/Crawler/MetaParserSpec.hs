@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Web.Saeplog.Crawler.MetaParserSpec
+module RBP.Crawler.MetaParserSpec
     where
 
-import Web.Saeplog.Crawler.MetaParser
+import RBP.Crawler.MetaParser
 
 import Test.Hspec
 

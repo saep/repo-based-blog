@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {- |
-Module      :  Web.Saeplog.Types.FileType
+Module      :  RBP.Types.FileType
 Description :  Supported file types and conversion functions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Types.FileType
+module RBP.Types.FileType
     where
 
 import           Data.Data       (Data, Typeable)

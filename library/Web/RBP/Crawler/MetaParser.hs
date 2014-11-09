@@ -1,5 +1,5 @@
 {- |
-Module      :  Web.Saeplog.Crawler.MetaParser
+Module      :  RBP.Crawler.MetaParser
 Description :  Extract meta data from the repository
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -8,7 +8,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Crawler.MetaParser
+module RBP.Crawler.MetaParser
     where
 
 import Control.Applicative (pure, (*>), (<$>), (<*), (<*>))

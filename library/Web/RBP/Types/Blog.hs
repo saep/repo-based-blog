@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {- |
-Module      :  Web.Saeplog.Types.Blog
+Module      :  RBP.Types.Blog
 Description :  Internal Blog state
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Types.Blog
+module RBP.Types.Blog
     where
 
 import Control.Concurrent.STM        (TChan)
@@ -18,9 +18,9 @@ import Data.FileStore                (FileStore)
 import Data.IxSet                    (IxSet)
 import Data.Map                      (Map)
 import Data.Time                     (UTCTime)
-import Web.Saeplog.Config
-import Web.Saeplog.Types.CachedEntry
-import Web.Saeplog.Types.Entry
+import RBP.Config
+import RBP.Types.CachedEntry
+import RBP.Types.Entry
 
 data Blog m = Blog
     { _nextEntryId         :: Integer

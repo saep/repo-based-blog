@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {- |
-Module      :  Web.Saeplog.Crawler.MetaCombiner
+Module      :  RBP.Crawler.MetaCombiner
 Description :  Contract a list of meta data into a single value type
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Crawler.MetaCombiner
+module RBP.Crawler.MetaCombiner
     where
 
 import           Control.Lens                   hiding (Context)
@@ -20,8 +20,8 @@ import           Data.Monoid
 import           Data.Set                       (Set)
 import qualified Data.Set                       as Set
 import           Data.Text                      (Text)
-import           Web.Saeplog.Crawler.MetaParser as M
-import           Web.Saeplog.Types.Entry
+import           RBP.Crawler.MetaParser as M
+import           RBP.Types.Entry
 
 data MetaDataContractionState = S
     { _context     :: Maybe FilePath

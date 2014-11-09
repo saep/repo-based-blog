@@ -11,7 +11,7 @@ Stability   :  experimental
 module Main where
 
 import System.IO
-import Web.Saeplog (saeplog)
+import RBP (saeplog)
 import System.Exit
 
 main :: IO ()

@@ -1,4 +1,4 @@
-name:               saeplog
+name:               repo-based-blog
 version:            0.0.1
 synopsis:           Blogging module using blaze html for markup
 description:
@@ -8,7 +8,7 @@ description:
   .
   This package also contains an executable that uses the dyre library to allow
   a configuration of a web application in the way xmonad or yi does. An examle
-  can be fount in the 'Web.Saeplog' module.
+  can be fount in the 'RBP' module.
   .
   The blog contents are managed via a version control system. The filestore
   library has been used as a backend for this and hence the supported
@@ -25,17 +25,17 @@ author:             Sebastian Witte
 maintainer:         woozletoff@gmail.com
 copyright:          Copyright (C) 2014 Sebastian Witte
 category:           Web
-homepage:           https://github.com/saep/saeplog
-bug-reports:        https://github.com/saep/saeplog/issues
+homepage:           https://github.com/saep/repo-based-blog
+bug-reports:        https://github.com/saep/repo-based-blog/issues
 build-type:         Simple
 extra-source-files: README.md
 cabal-version:      >=1.10
 
-executable saeplog
+executable rbp
   main-is:              Main.hs
   hs-source-dirs:       executable
   build-depends:        base,
-                        saeplog
+                        repo-based-blog
 
   hs-source-dirs:       executable
   default-language:     Haskell2010
@@ -67,24 +67,24 @@ library
                         transformers-base,
                         transformers-compat
 
-  exposed-modules:      Web.Saeplog,
-                        Web.Saeplog.Blog.Query
+  exposed-modules:      RBP,
+                        RBP.Blog.Query
 
-  other-modules:        Web.Saeplog.Blog,
-                        Web.Saeplog.Config,
-                        Web.Saeplog.Converter,
-                        Web.Saeplog.Crawler,
-                        Web.Saeplog.Crawler.MetaCombiner,
-                        Web.Saeplog.Crawler.MetaParser,
-                        Web.Saeplog.Crawler.Repository,
-                        Web.Saeplog.Main,
-                        Web.Saeplog.Templates.Default,
-                        Web.Saeplog.Types,
-                        Web.Saeplog.Types.Blog,
-                        Web.Saeplog.Types.CachedEntry,
-                        Web.Saeplog.Types.Entry,
-                        Web.Saeplog.Types.FileType,
-                        Web.Saeplog.Util
+  other-modules:        RBP.Blog,
+                        RBP.Config,
+                        RBP.Converter,
+                        RBP.Crawler,
+                        RBP.Crawler.MetaCombiner,
+                        RBP.Crawler.MetaParser,
+                        RBP.Crawler.Repository,
+                        RBP.Main,
+                        RBP.Templates.Default,
+                        RBP.Types,
+                        RBP.Types.Blog,
+                        RBP.Types.CachedEntry,
+                        RBP.Types.Entry,
+                        RBP.Types.FileType,
+                        RBP.Util
 
 test-suite hspec
   type:                 exitcode-stdio-1.0
@@ -92,7 +92,7 @@ test-suite hspec
   main-is:              Spec.hs
   default-language:     Haskell2010
   build-depends:        base,
-                        saeplog,
+                        repo-based-blog,
 
                         hspec ==1.*,
                         QuickCheck >=2.6,

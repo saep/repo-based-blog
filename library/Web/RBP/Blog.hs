@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {- |
-Module      :  Web.Saeplog.Blog
+Module      :  RBP.Blog
 Description :  Very experimental Blog-serving facilties
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Blog
+module RBP.Blog
     ( withBlog
     , blogEntries
     , Blog
@@ -26,15 +26,15 @@ import qualified Data.Map                      as Map
 import           Data.Time
 import           System.Exit                   (exitFailure)
 import           System.IO
-import           Web.Saeplog.Blog.Query
-import           Web.Saeplog.Config
-import           Web.Saeplog.Converter         (renderEntries)
-import           Web.Saeplog.Crawler
-import           Web.Saeplog.Types.Blog        hiding (Blog)
-import qualified Web.Saeplog.Types.Blog        as Internal
-import           Web.Saeplog.Types.CachedEntry
-import           Web.Saeplog.Types.Entry
-import           Web.Saeplog.Util
+import           RBP.Blog.Query
+import           RBP.Config
+import           RBP.Converter         (renderEntries)
+import           RBP.Crawler
+import           RBP.Types.Blog        hiding (Blog)
+import qualified RBP.Types.Blog        as Internal
+import           RBP.Types.CachedEntry
+import           RBP.Types.Entry
+import           RBP.Util
 
 -- | A value of this type contains all the data needed for the blog module to
 -- operate.

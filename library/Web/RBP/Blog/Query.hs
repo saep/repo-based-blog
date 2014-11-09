@@ -1,5 +1,5 @@
 {- |
-Module      :  Web.Saeplog.Blog.Query
+Module      :  RBP.Blog.Query
 Description :  Utlities for creating search queries
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -10,7 +10,7 @@ Stability   :  experimental
 This module provides some functions and data types that can be used to manage
 search and query data for a list of 'Entry' values.
 -}
-module Web.Saeplog.Blog.Query (
+module RBP.Blog.Query (
     EntryQuery(..),
 
     -- * Sorting
@@ -21,8 +21,8 @@ module Web.Saeplog.Blog.Query (
     ) where
 
 import Data.Default
-import Web.Saeplog.Util
-import Web.Saeplog.Types
+import RBP.Util
+import RBP.Types
 
 
 -- | Simple enum that provides Show and read instances so that a parser can

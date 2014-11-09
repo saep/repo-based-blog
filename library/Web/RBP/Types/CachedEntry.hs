@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {- |
-Module      :  Web.Saeplog.Types.CachedEntry
+Module      :  RBP.Types.CachedEntry
 Description :  Type for cached entries together with some utility functions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,11 +9,11 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Types.CachedEntry
+module RBP.Types.CachedEntry
     where
 
-import Web.Saeplog.Types
-import Web.Saeplog.Util
+import RBP.Types
+import RBP.Util
 
 data CachedEntry = CachedEntry
     { _entry           :: Html

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {- |
-Module      :  Web.Saeplog.Templates.Default
+Module      :  RBP.Templates.Default
 Description :  The default blog template
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,16 +9,16 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Templates.Default
+module RBP.Templates.Default
     where
 
 import Data.Time
 import System.Locale
-import qualified Web.Saeplog.Config as Config
-import Web.Saeplog.Types.Entry as E
+import qualified RBP.Config as Config
+import RBP.Types.Entry as E
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as A
-import Web.Saeplog.Util
+import RBP.Util
 import qualified Data.IxSet as IxSet
 import qualified Data.Set as Set
 import qualified Data.Text as Text

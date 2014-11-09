@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Web.Saeplog.Crawler.MetaCombinerSpec
+module RBP.Crawler.MetaCombinerSpec
     where
 
 import           Control.Applicative
@@ -11,10 +11,10 @@ import qualified Data.Set                         as Set
 import           Data.Text                        as T (Text, length, pack)
 import           Data.Time
 import           System.FilePath                  ((</>))
-import           Web.Saeplog.Crawler.MetaCombiner as M
-import           Web.Saeplog.Crawler.MetaParser   as M
-import           Web.Saeplog.Types.Entry
-import           Web.Saeplog.Types.FileType
+import           RBP.Crawler.MetaCombiner as M
+import           RBP.Crawler.MetaParser   as M
+import           RBP.Types.Entry
+import           RBP.Types.FileType
 
 import Test.Hspec      as Test
 import Test.QuickCheck

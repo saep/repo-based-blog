@@ -1,5 +1,5 @@
 {- |
-Module      :  Web.Saeplog
+Module      :  RBP
 Description :  This module re-exports all necessary and some useful modules
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -8,7 +8,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog (
+module RBP (
     -- * Configuration
     -- $configuration
     BlogConfig (..),
@@ -54,12 +54,12 @@ module Web.Saeplog (
     ) where
 
 import Data.Default (Default(..))
-import Web.Saeplog.Blog              (Blog, blogEntries, withBlog, getBlogConfig)
-import Web.Saeplog.Config            (BlogConfig (..))
-import Web.Saeplog.Main              (saeplog)
-import Web.Saeplog.Types.Entry
-import Web.Saeplog.Types.FileType    (FileType(..))
-import Web.Saeplog.Templates.Default (createDefaultBlogConfig)
+import RBP.Blog              (Blog, blogEntries, withBlog, getBlogConfig)
+import RBP.Config            (BlogConfig (..))
+import RBP.Main              (saeplog)
+import RBP.Types.Entry
+import RBP.Types.FileType    (FileType(..))
+import RBP.Templates.Default (createDefaultBlogConfig)
 
 -- $configuration
 -- The blog configuration is essentially done by setting the fields of the
@@ -72,7 +72,7 @@ import Web.Saeplog.Templates.Default (createDefaultBlogConfig)
 -- value via the 'withBlog' function and pass it to functions that need access
 -- to it because they call blog related functions.
 --
--- > import Web.Saeplog
+-- > import RBP
 -- >
 -- > myBlogConfig = createDefaultBlogConfig
 -- >     "/path/to/repository/with/blog/entries"
@@ -86,7 +86,7 @@ import Web.Saeplog.Templates.Default (createDefaultBlogConfig)
 -- This example is almost identical to the general usage except for the call of
 -- the function 'saeplog'.
 --
--- > import Web.Saeplog
+-- > import RBP
 -- > -- Other imports such as Web.Routes.Boomerang
 -- >
 -- > myBlogConfig = createDefaultBlogConfig

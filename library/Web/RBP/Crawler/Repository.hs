@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {- |
-Module      :  Web.Saeplog.Crawler
+Module      :  RBP.Crawler
 Description :  Implementation of a meta data collector for the blog entry
                repository
 Copyright   :  (c) Sebastian Witte
@@ -10,7 +10,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Crawler.Repository
+module RBP.Crawler.Repository
     where
 
 import           Control.Applicative
@@ -32,12 +32,12 @@ import           Data.Monoid
 import           Data.Time
 import           System.Directory
 import           System.FilePath
-import           Web.Saeplog.Config
-import           Web.Saeplog.Crawler.MetaCombiner
-import           Web.Saeplog.Crawler.MetaParser
-import           Web.Saeplog.Types                as E
-import           Web.Saeplog.Types.Blog
-import           Web.Saeplog.Util
+import           RBP.Config
+import           RBP.Crawler.MetaCombiner
+import           RBP.Crawler.MetaParser
+import           RBP.Types                as E
+import           RBP.Types.Blog
+import           RBP.Util
 
 -- | Initialize the 'Blog' state by providing a path inside a repository.
 initBlog :: (Functor io, MonadIO io) => BlogConfig m -> ExceptT String io (Blog m)

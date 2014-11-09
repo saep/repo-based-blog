@@ -1,5 +1,5 @@
 {- |
-Module      :  Web.Saeplog.Util
+Module      :  RBP.Util
 Description :  Globally used utility functions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -8,7 +8,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module Web.Saeplog.Util
+module RBP.Util
     ( module ReExport
     , ixSetModifyIx
     ) where
