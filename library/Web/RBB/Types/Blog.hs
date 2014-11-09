@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {- |
-Module      :  RBB.Types.Blog
+Module      : Web.RBB.Types.Blog
 Description :  Internal Blog state
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,18 +9,18 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBB.Types.Blog
+module Web.RBB.Types.Blog
     where
 
-import Control.Concurrent.STM        (TChan)
+import Control.Concurrent.STM    (TChan)
 import Control.Lens
-import Data.FileStore                (FileStore)
-import Data.IxSet                    (IxSet)
-import Data.Map                      (Map)
-import Data.Time                     (UTCTime)
-import RBB.Config
-import RBB.Types.CachedEntry
-import RBB.Types.Entry
+import Data.FileStore            (FileStore)
+import Data.IxSet                (IxSet)
+import Data.Map                  (Map)
+import Data.Time                 (UTCTime)
+import Web.RBB.Config
+import Web.RBB.Types.CachedEntry
+import Web.RBB.Types.Entry
 
 data Blog m = Blog
     { _nextEntryId         :: Integer

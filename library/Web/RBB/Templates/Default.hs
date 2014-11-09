@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {- |
-Module      :  RBB.Templates.Default
+Module      : Web.RBB.Templates.Default
 Description :  The default blog template
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,19 +9,19 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBB.Templates.Default
+module Web.RBB.Templates.Default
     where
 
-import Data.Time
-import System.Locale
-import qualified RBB.Config as Config
-import RBB.Types.Entry as E
-import Text.Blaze.Html5 as H
-import Text.Blaze.Html5.Attributes as A
-import RBB.Util
-import qualified Data.IxSet as IxSet
-import qualified Data.Set as Set
-import qualified Data.Text as Text
+import qualified Data.IxSet                  as IxSet
+import qualified Data.Set                    as Set
+import qualified Data.Text                   as Text
+import           Data.Time
+import           System.Locale
+import           Text.Blaze.Html5            as H
+import           Text.Blaze.Html5.Attributes as A
+import qualified Web.RBB.Config              as Config
+import           Web.RBB.Types.Entry         as E
+import           Web.RBB.Util
 
 entryRenderer :: Monad m => Config.BlogConfig m -> [(Entry, Html)] -> m Html
 entryRenderer cfg filteredEntries  = case filteredEntries of

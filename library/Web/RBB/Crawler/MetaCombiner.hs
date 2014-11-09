@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {- |
-Module      :  RBB.Crawler.MetaCombiner
+Module      : Web.RBB.Crawler.MetaCombiner
 Description :  Contract a list of meta data into a single value type
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,19 +9,19 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBB.Crawler.MetaCombiner
+module Web.RBB.Crawler.MetaCombiner
     where
 
-import           Control.Lens                   hiding (Context)
+import           Control.Lens               hiding (Context)
 import           Control.Monad.State
-import           Data.IxSet                     hiding (null)
-import qualified Data.IxSet                     as IxSet
+import           Data.IxSet                 hiding (null)
+import qualified Data.IxSet                 as IxSet
 import           Data.Monoid
-import           Data.Set                       (Set)
-import qualified Data.Set                       as Set
-import           Data.Text                      (Text)
-import           RBB.Crawler.MetaParser as M
-import           RBB.Types.Entry
+import           Data.Set                   (Set)
+import qualified Data.Set                   as Set
+import           Data.Text                  (Text)
+import           Web.RBB.Crawler.MetaParser as M
+import           Web.RBB.Types.Entry
 
 data MetaDataContractionState = S
     { _context     :: Maybe FilePath

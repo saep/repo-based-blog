@@ -1,15 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
-module RBB.Crawler.MetaParserSpec
+module Web.RBB.Crawler.MetaParserSpec
     where
 
-import RBB.Crawler.MetaParser
+import Web.RBB.Crawler.MetaParser
 
 import Test.Hspec
 
-import Data.Function (on)
 import Control.Monad
-import Text.Parsec (parse, ParseError)
-import Data.List (intercalate, permutations, sortBy)
+import Data.Function (on)
+import Data.List     (intercalate, permutations, sortBy)
+import Text.Parsec   (ParseError, parse)
 
 instance Eq ParseError where
     (==) = (==) `on` show

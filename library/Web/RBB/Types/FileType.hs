@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {- |
-Module      :  RBB.Types.FileType
+Module      : Web.RBB.Types.FileType
 Description :  Supported file types and conversion functions
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBB.Types.FileType
+module Web.RBB.Types.FileType
     where
 
 import           Data.Data       (Data, Typeable)

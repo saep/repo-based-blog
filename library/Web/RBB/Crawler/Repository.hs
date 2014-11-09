@@ -1,6 +1,5 @@
-{-# LANGUAGE FlexibleContexts #-}
 {- |
-Module      :  RBB.Crawler
+Module      : Web.RBB.Crawler
 Description :  Implementation of a meta data collector for the blog entry
                repository
 Copyright   :  (c) Sebastian Witte
@@ -10,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBB.Crawler.Repository
+module Web.RBB.Crawler.Repository
     where
 
 import           Control.Applicative
@@ -19,25 +18,24 @@ import           Control.Lens
 import           Control.Monad
 import           Control.Monad.State
 import           Control.Monad.Trans.Except
-import           Data.FileStore                   (Change (..), FileStore,
-                                                   Revision (..),
-                                                   darcsFileStore, gitFileStore,
-                                                   mercurialFileStore)
-import qualified Data.FileStore                   as FS
+import           Data.FileStore               (Change (..), FileStore,
+                                               Revision (..), darcsFileStore,
+                                               gitFileStore, mercurialFileStore)
+import qualified Data.FileStore               as FS
 import           Data.IxSet
-import qualified Data.IxSet                       as IxSet
-import           Data.List                        (foldl')
+import qualified Data.IxSet                   as IxSet
+import           Data.List                    (foldl')
 import           Data.Maybe
 import           Data.Monoid
 import           Data.Time
 import           System.Directory
 import           System.FilePath
-import           RBB.Config
-import           RBB.Crawler.MetaCombiner
-import           RBB.Crawler.MetaParser
-import           RBB.Types                as E
-import           RBB.Types.Blog
-import           RBB.Util
+import           Web.RBB.Config
+import           Web.RBB.Crawler.MetaCombiner
+import           Web.RBB.Crawler.MetaParser
+import           Web.RBB.Types                as E
+import           Web.RBB.Types.Blog
+import           Web.RBB.Util
 
 -- | Initialize the 'Blog' state by providing a path inside a repository.
 initBlog :: (Functor io, MonadIO io) => BlogConfig m -> ExceptT String io (Blog m)

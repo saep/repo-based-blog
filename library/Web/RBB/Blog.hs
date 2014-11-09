@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {- |
-Module      :  RBB.Blog
+Module      : Web.RBB.Blog
 Description :  Very experimental Blog-serving facilties
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,7 +9,7 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBB.Blog
+module Web.RBB.Blog
     ( withBlog
     , blogEntries
     , Blog
@@ -20,21 +20,21 @@ import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Monad.Reader
 import           Control.Monad.Trans.Except
-import           Data.IxSet                    (toList)
-import           Data.List                     (sortBy)
-import qualified Data.Map                      as Map
+import           Data.IxSet                 (toList)
+import           Data.List                  (sortBy)
+import qualified Data.Map                   as Map
 import           Data.Time
-import           System.Exit                   (exitFailure)
+import           System.Exit                (exitFailure)
 import           System.IO
-import           RBB.Blog.Query
-import           RBB.Config
-import           RBB.Converter         (renderEntries)
-import           RBB.Crawler
-import           RBB.Types.Blog        hiding (Blog)
-import qualified RBB.Types.Blog        as Internal
-import           RBB.Types.CachedEntry
-import           RBB.Types.Entry
-import           RBB.Util
+import           Web.RBB.Blog.Query
+import           Web.RBB.Config
+import           Web.RBB.Converter          (renderEntries)
+import           Web.RBB.Crawler
+import           Web.RBB.Types.Blog         hiding (Blog)
+import qualified Web.RBB.Types.Blog         as Internal
+import           Web.RBB.Types.CachedEntry
+import           Web.RBB.Types.Entry
+import           Web.RBB.Util
 
 -- | A value of this type contains all the data needed for the blog module to
 -- operate.

@@ -1,5 +1,5 @@
 {- |
-Module      :  RBB.Crawler
+Module      : Web.RBB.Crawler
 Description :  Exported Crawler API
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -8,11 +8,11 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBB.Crawler
-    ( module RBB.Crawler.MetaParser
-    , module RBB.Crawler.Repository
+module Web.RBB.Crawler
+    ( module Web.RBB.Crawler.MetaParser
+    , module Web.RBB.Crawler.Repository
     ) where
 
-import RBB.Crawler.MetaParser (Meta (..), parseMeta)
-import RBB.Crawler.Repository (initBlog, updateBlog)
+import Web.RBB.Crawler.MetaParser (Meta (..), parseMeta)
+import Web.RBB.Crawler.Repository (initBlog, updateBlog)
 

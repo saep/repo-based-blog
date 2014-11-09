@@ -1,16 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
-module RBB.Crawler.RepositorySpec
+module Web.RBB.Crawler.RepositorySpec
     where
 
-import RBB.Crawler.Repository
-import RBB.Templates.Default
-import RBB.Types
-import RBB.Types.Blog
+import Web.RBB.Crawler.Repository
+import Web.RBB.Templates.Default
+import Web.RBB.Types
+import Web.RBB.Types.Blog
 
 import Control.Lens
 import Control.Monad.Trans.Except
 import Data.FileStore
-import Data.Functor.Identity
 import Data.IxSet
 import Data.List                  (sort)
 import System.Directory

@@ -10,9 +10,9 @@ Stability   :  experimental
 -}
 module Main where
 
-import System.IO
-import RBB (saeplog)
 import System.Exit
+import System.IO
+import Web.RBB     (saeplog)
 
 main :: IO ()
 main = saeplog $ do

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {- |
-Module      :  RBB.Config
+Module      : Web.RBB.Config
 Description :  Basic configuration for a blog
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
@@ -9,14 +9,14 @@ Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
 -}
-module RBB.Config
+module Web.RBB.Config
     ( BlogConfig(..)
     ) where
 
-import           Data.Text                     (Text)
-import           Data.Time                     (UTCTime)
-import           Text.Blaze.Html5              (Html)
-import           RBB.Types
+import Data.Text        (Text)
+import Data.Time        (UTCTime)
+import Text.Blaze.Html5 (Html)
+import Web.RBB.Types
 
 -- | Basic configuration of the blog.
 -- The @m@ type variable is just a context in which the functions can operate

@@ -1,20 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
-module RBB.Crawler.MetaCombinerSpec
+module Web.RBB.Crawler.MetaCombinerSpec
     where
 
 import           Control.Applicative
-import           Control.Lens                     hiding (elements)
-import qualified Data.IxSet                       as IxSet
+import           Control.Lens                 hiding (elements)
+import qualified Data.IxSet                   as IxSet
 import           Data.Monoid
-import           Data.Set                         (Set)
-import qualified Data.Set                         as Set
-import           Data.Text                        as T (Text, length, pack)
+import           Data.Set                     (Set)
+import qualified Data.Set                     as Set
+import           Data.Text                    as T (Text, length, pack)
 import           Data.Time
-import           System.FilePath                  ((</>))
-import           RBB.Crawler.MetaCombiner as M
-import           RBB.Crawler.MetaParser   as M
-import           RBB.Types.Entry
-import           RBB.Types.FileType
+import           System.FilePath              ((</>))
+import           Web.RBB.Crawler.MetaCombiner as M
+import           Web.RBB.Crawler.MetaParser   as M
+import           Web.RBB.Types.Entry
+import           Web.RBB.Types.FileType
 
 import Test.Hspec      as Test
 import Test.QuickCheck

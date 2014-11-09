@@ -8,7 +8,7 @@ description:
   .
   This package also contains an executable that uses the dyre library to allow
   a configuration of a web application in the way xmonad or yi does. An examle
-  can be fount in the 'RBP' module.
+  can be fount in the 'RBB' module.
   .
   The blog contents are managed via a version control system. The filestore
   library has been used as a backend for this and hence the supported
@@ -67,24 +67,24 @@ library
                         transformers-base,
                         transformers-compat
 
-  exposed-modules:      RBP,
-                        RBP.Blog.Query
+  exposed-modules:      Web.RBB,
+                        Web.RBB.Blog.Query
 
-  other-modules:        RBP.Blog,
-                        RBP.Config,
-                        RBP.Converter,
-                        RBP.Crawler,
-                        RBP.Crawler.MetaCombiner,
-                        RBP.Crawler.MetaParser,
-                        RBP.Crawler.Repository,
-                        RBP.Main,
-                        RBP.Templates.Default,
-                        RBP.Types,
-                        RBP.Types.Blog,
-                        RBP.Types.CachedEntry,
-                        RBP.Types.Entry,
-                        RBP.Types.FileType,
-                        RBP.Util
+  other-modules:        Web.RBB.Blog,
+                        Web.RBB.Config,
+                        Web.RBB.Converter,
+                        Web.RBB.Crawler,
+                        Web.RBB.Crawler.MetaCombiner,
+                        Web.RBB.Crawler.MetaParser,
+                        Web.RBB.Crawler.Repository,
+                        Web.RBB.Main,
+                        Web.RBB.Templates.Default,
+                        Web.RBB.Types,
+                        Web.RBB.Types.Blog,
+                        Web.RBB.Types.CachedEntry,
+                        Web.RBB.Types.Entry,
+                        Web.RBB.Types.FileType,
+                        Web.RBB.Util
 
 test-suite hspec
   type:                 exitcode-stdio-1.0
