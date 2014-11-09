@@ -22,7 +22,6 @@ import           Control.Lens
 import           Control.Monad.IO.Class
 import           Control.Monad.Reader
 import           Data.Default
-import           Data.IxSet                    as IxSet
 import qualified Data.Map                      as Map
 import qualified Data.Set                      as Set
 import           Text.Pandoc.Options
@@ -36,19 +35,16 @@ import           Web.Saeplog.Util
 
 -- | Given a bunch of entries and a 'Blog'
 renderEntries :: (Functor io, MonadIO io, Monad m)
-              => Blog m -> Either [Integer] [Entry] -> io (m Html)
+              => Blog m -> [Entry] -> io (m Html)
 renderEntries blog is = do
     cachedEntries <- foldM manageCache [] $ select is
     let bcfg = blog^.blogConfig
     return . entryRenderer bcfg bcfg $ reverse cachedEntries
   where
-    select :: Either [Integer] [Entry] -> [(Maybe CachedEntry, Maybe Entry)]
+    select :: [Entry] -> [(Maybe CachedEntry, Maybe Entry)]
     select =
         let c = blog^.blogEntryCache
-            es = blog^.entries
-        in either
-            (map (\i -> (Map.lookup i c, getOne (es @= Index i))))
-            (map (\e -> (Map.lookup (e^.entryId) c, Just e)))
+        in map (\e -> (Map.lookup (e^.entryId) c, Just e))
 
     manageCache :: (Functor io, MonadIO io)
                 => [(Entry, Html)]

@@ -18,44 +18,30 @@ import           Data.Time                     (UTCTime)
 import           Text.Blaze.Html5              (Html)
 import           Web.Saeplog.Types
 
--- | Basic configuration of a blog entry.
+-- | Basic configuration of the blog.
+-- The @m@ type variable is just a context in which the functions can operate
+-- on. It can be as simple as the @Identity@ functor but also more complex to
+-- play nice with libraries such as boomerang (which provides type-safe URLs).
+-- These functions are usually called in an 'IO' context and hence the context
+-- can be some 'IO' type as well.
+--
 data BlogConfig m = BlogConfig
     { baseURL        :: m Text
-    -- ^ URL at which the blog is accessible.
-    --
-    --  Default: @Identity@ <http://127.0.0.1:8000/blog>
+    -- ^ The base URL of the website such as <https://github.com/saep/saeplog>.
     , entryRenderer  :: BlogConfig m -> [(Entry, Html)] -> m Html
-    -- ^ This entry describes how the content of a blog entry is being
+    -- ^ This field describes how the content of a blog entry is being
     -- rendered. The 'Html' content is the blog content rendered with the
-    -- pandoc library.
+    -- pandoc library. You can take a look at the implementation of the the
+    -- module "Web.Saeplog.Templates.Default" on how to define this function.
     --
-    -- $entrySettings
     , timeFormatter  :: UTCTime -> Text
     -- ^ Function that converts time entries to printable 'Text'.
     , entryPath      :: FilePath
     -- ^ Path to the repository that contains the blog entries.
     --
     -- The path may as well point to a directory within a repository.
-    , resourcesPath  :: FilePath
-    -- ^ Path to a directory whose content are considered static resources.
-    --
-    -- Every file int hat directory is accessible, so do not put sensitive
-    -- stuff in there.
     , updateInterval :: Integer
     -- ^ Interval in minutes at which the entry repository should be queried for
     -- new content. Will default to 10 for entries smaller than 1.
     }
-
-{-| $entrySettings
-As it would be relatively inconvenient to recompile the web site everytime the
-cascading style sheet for the general design is changed, it is stored in an
-extra file that is dynamically loaded. The 'BlogConfig' defines the two fields
-'resourcesPath' and 'cssFileName' to set the sheet.
-
-Most of the content is styled using the <http://pandoc.org pandoc> library. So
-your CSS should conform to that. Additionally, every entry can contain
-additional class and id tags. But that depends entirely on the function put into
-this field.
--}
-
 

@@ -38,7 +38,6 @@ import           Web.Saeplog.Crawler.MetaParser
 import           Web.Saeplog.Types                as E
 import           Web.Saeplog.Types.Blog
 import           Web.Saeplog.Util
-import Control.Monad.Base
 
 -- | Initialize the 'Blog' state by providing a path inside a repository.
 initBlog :: (Functor io, MonadIO io) => BlogConfig m -> ExceptT String io (Blog m)

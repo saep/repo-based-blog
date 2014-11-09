@@ -20,29 +20,38 @@ import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Monad.Reader
 import           Control.Monad.Trans.Except
-import qualified Data.IxSet                    as IxSet
+import           Data.IxSet                    (toList)
 import           Data.List                     (sortBy)
 import qualified Data.Map                      as Map
 import           Data.Time
-import           Happstack.Server              (ServerPartT)
 import           System.Exit                   (exitFailure)
 import           System.IO
 import           Web.Saeplog.Blog.Query
 import           Web.Saeplog.Config
-import           Web.Saeplog.Converter
+import           Web.Saeplog.Converter         (renderEntries)
 import           Web.Saeplog.Crawler
 import           Web.Saeplog.Types.Blog        hiding (Blog)
 import qualified Web.Saeplog.Types.Blog        as Internal
 import           Web.Saeplog.Types.CachedEntry
+import           Web.Saeplog.Types.Entry
 import           Web.Saeplog.Util
 
+-- | A value of this type contains all the data needed for the blog module to
+-- operate.
 newtype Blog m = Blog (Maybe (TVar (Internal.Blog m)))
+-- TODO saep 2014-11-09 remove the Maybe wrapper?
 
+-- | Retrieve the 'BlogConfig' from the 'Blog' value. Due to the resuorce
+-- managmeent that the 'Blog' data type encapsulates, this function only works
+-- inside an 'IO' monad.
 getBlogConfig :: (Functor io, MonadIO io)
               => Blog m -> io (Maybe (BlogConfig m))
 getBlogConfig (Blog Nothing) = return Nothing
 getBlogConfig (Blog (Just blog)) = Just . view blogConfig <$> liftIO (readTVarIO blog)
 
+-- | Create a 'Blog' object by providing a 'BlogConfig' value.
+-- This function also starts threads which will handle the resource management
+-- with some configurable settings that can be defined in the 'BlogConfig'.
 withBlog :: BlogConfig m -> (Blog m -> IO ()) -> IO ()
 withBlog cfg action = do
     mb <- runExceptT $ initBlog cfg
@@ -55,20 +64,19 @@ withBlog cfg action = do
             _ <- forkIO $ manageEntryCache tb (b^.blogCacheChannel)
             action $ Blog (Just tb)
 
--- TODO saep 2014-11-05 Document those (e.g. exposing Web.Saeplog.Blog.Query)
--- | Generate a list of blog entries. The size and order of the list is
--- determined by the supplied request data.
-blogEntries :: (Monad m) => Blog m -> ServerPartT IO (m Html)
-blogEntries (Blog Nothing) = mzero
-blogEntries (Blog (Just tb)) = do
+-- | Retrieve an 'IxSet' of blog 'Entry' values. If
+blogEntries :: (Functor io, MonadIO io, Monad m)
+            => Blog m                             -- ^ Blog configuration
+            -> EntryQuery                         -- ^ Sorting order of the entries
+            -> Maybe (IxSet Entry -> IxSet Entry) -- ^ Query function
+            -> io (m Html)
+blogEntries (Blog Nothing) _ _ = return $ return mempty
+blogEntries (Blog (Just tb)) eq qfun = do
     _ <- liftIO . forkIO $ manageEntryUpdates tb
     b <- liftIO $ readTVarIO tb
-    qry <- parseQueryRqData
-    case eqId qry of
-        Just i -> renderEntries b (Left [i])
-        Nothing -> do
-            let es = sortBy (eqSortBy qry) $ IxSet.toList (b^.entries)
-            renderEntries b (Right es)
+    let es = toList . fromMaybe id qfun $ b^.entries
+    renderEntries b $ sortBy (eqSortBy eq) es
+
 
 -- | On a site rendering request, test whether the entry repository should
 -- check for updates.

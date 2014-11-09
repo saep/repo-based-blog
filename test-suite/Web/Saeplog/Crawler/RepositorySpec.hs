@@ -66,7 +66,7 @@ spec = do
 
     describe "collectEntryData" $ do
         it "should match this test case" $ do
-            Right blog <- runExceptT $ initBlog $ createDefaultBlogConfig "test-resources" "."
+            Right blog <- runExceptT $ initBlog $ createDefaultBlogConfig "test-resources"
             let b = blog :: Blog Identity
 
             size (b^.entries) `shouldBe` 2

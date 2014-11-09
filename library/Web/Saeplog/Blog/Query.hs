@@ -1,34 +1,32 @@
 {- |
 Module      :  Web.Saeplog.Blog.Query
-Description :  Query data
+Description :  Utlities for creating search queries
 Copyright   :  (c) Sebastian Witte
 License     :  BSD3
 
 Maintainer  :  woozletoff@gmail.com
 Stability   :  experimental
 
+This module provides some functions and data types that can be used to manage
+search and query data for a list of 'Entry' values.
 -}
-module Web.Saeplog.Blog.Query
-    where
+module Web.Saeplog.Blog.Query (
+    EntryQuery(..),
 
+    -- * Sorting
+    SortMethod(..),
+    SortOrder(..),
+    sortMethodToComparator,
+
+    ) where
+
+import Data.Default
 import Web.Saeplog.Util
 import Web.Saeplog.Types
-import Happstack.Server (look, HasRqData, ServerPartT)
 
-readMaybe :: Read a => String -> Maybe a
-readMaybe x = case reads x of
-    [(v,_)] -> Just v
-    _ -> Nothing
 
--- | 'look' at the request data of the given name and try to parse it via
--- 'readMaybe'. If the parse failed or the request data did not exist, return
--- the provided default.
-maybeLookAndRead :: (Monad m, Read a, Alternative m, HasRqData m)
-                 => a -> String -> m a
-maybeLookAndRead a qry = do
-    l <- optional $ look qry
-    return $ fromMaybe a (maybe (Just a) readMaybe l)
-
+-- | Simple enum that provides Show and read instances so that a parser can
+-- convert the sting directly to a value of this type.
 data SortMethod = Update | Identifier | Author
     deriving (Show, Read, Eq, Ord, Enum)
 
@@ -36,6 +34,8 @@ data SortOrder = Ascending | Descending
     deriving (Show, Read, Eq, Ord, Enum)
 
 
+-- | Convert a 'SortMethod' value to a sorting function that can be used in
+-- confunction with functions 'sortBy' from "Data.List".
 sortMethodToComparator :: SortMethod -> SortOrder -> (Entry -> Entry -> Ordering)
 sortMethodToComparator m o
     | o == Ascending = cmp
@@ -48,20 +48,14 @@ sortMethodToComparator m o
 
 
 -- | The request data provided inside a URL.
--- > id=42&sortBy=Identifier
+-- @id=42&sortBy=Identifier@
 -- For default and required values look at the 'parseQueryRqData' function.
 data EntryQuery = EntryQuery
-    { eqId   :: Maybe Integer
-    -- ^ Entry identifier provided in the request data
-    , eqSortBy :: Entry -> Entry -> Ordering
+    { eqSortBy :: Entry -> Entry -> Ordering
     -- ^ The method entries are sorted by.
     }
 
--- | Parse the supported request data and present it in a data type.
-parseQueryRqData :: ServerPartT IO EntryQuery
-parseQueryRqData = EntryQuery
-    <$> (join . fmap readMaybe <$> optional (look "id"))
-    <*> (sortMethodToComparator
-        <$> maybeLookAndRead Update "sortBy"
-        <*> maybeLookAndRead Descending "sortOrder")
-
+-- | The 'Default' instance for an 'EntryQuery' type contains a function that
+-- sorts the entries descending by the last update to the entry.
+instance Default EntryQuery where
+    def = EntryQuery (sortMethodToComparator Update  Descending)

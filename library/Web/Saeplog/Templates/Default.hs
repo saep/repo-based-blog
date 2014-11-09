@@ -70,16 +70,14 @@ withBlogHeader es =
     H.div ! class_ "blog-with-metadata" $
         section ! class_ "blog" $ sequence_ es
 
--- | Given the path to the blog entries and the path to the static resources,
--- create a 'BlogConfig' value that is otherwise containing the default
--- configuration.
-createDefaultBlogConfig :: (Monad m) => FilePath -> FilePath -> Config.BlogConfig m
-createDefaultBlogConfig ep resp = Config.BlogConfig
+-- | Given the path to the blog entries, create  a 'BlogConfig' value that can
+-- be used as an overrideable template with most fields using default values.
+createDefaultBlogConfig :: (Monad m) => FilePath -> Config.BlogConfig m
+createDefaultBlogConfig ep = Config.BlogConfig
     { Config.baseURL = return "http://127.0.0.1/blog"
     , Config.entryRenderer = entryRenderer
     , Config.timeFormatter = timeFormatter
     , Config.entryPath = ep
-    , Config.resourcesPath = resp
     , Config.updateInterval = 10
     }
 
