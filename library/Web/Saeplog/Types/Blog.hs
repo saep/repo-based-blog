@@ -22,7 +22,7 @@ import Web.Saeplog.Config
 import Web.Saeplog.Types.CachedEntry
 import Web.Saeplog.Types.Entry
 
-data Blog = Blog
+data Blog m = Blog
     { _nextEntryId         :: Integer
     , _entries             :: IxSet Entry
     , _lastEntryUpdate     :: EntryUpdate
@@ -32,7 +32,7 @@ data Blog = Blog
     , _blogCacheChannel    :: TChan (Integer, CachedEntry)
     , _repositoryPath      :: FilePath
     , _contentRelativePath :: FilePath
-    , _blogConfig          :: BlogConfig
+    , _blogConfig          :: BlogConfig m
     }
 makeLenses ''Blog
 

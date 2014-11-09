@@ -41,34 +41,33 @@ import           Web.Saeplog.Util
 import Control.Monad.Base
 
 -- | Initialize the 'Blog' state by providing a path inside a repository.
-initBlog :: (MonadBase IO io) => BlogConfig -> ExceptT String io Blog
+initBlog :: (Functor io, MonadIO io) => BlogConfig m -> ExceptT String io (Blog m)
 initBlog bcfg = do
     b <- initialBlog
     collectEntryData Nothing b
 
   where
-    initialBlog :: (MonadBase IO io) => ExceptT String io Blog
     initialBlog = do
         (rp, crp, fs) <- initializeFileStore (entryPath bcfg)
         Blog <$> pure 1
              <*> pure mempty
              <*> pure (EntryUpdate (UTCTime (ModifiedJulianDay 0) 0) "")
-             <*> liftBase getCurrentTime
+             <*> liftIO getCurrentTime
              <*> pure fs
              <*> pure mempty
-             <*> (liftBase . atomically) newTChan
+             <*> (liftIO . atomically) newTChan
              <*> pure rp
              <*> pure crp
              <*> pure bcfg
 
 -- | Update the entries in the 'Blog' state.
-updateBlog :: (MonadBase IO io) => Blog -> ExceptT String io Blog
+updateBlog :: (Functor io, MonadIO io) => Blog m -> ExceptT String io (Blog m)
 updateBlog blog = collectEntryData (Just (blog^.lastEntryUpdate)) blog
 
-collectEntryData :: (MonadBase IO io)
+collectEntryData :: (Functor io, MonadIO io)
                  => Maybe EntryUpdate -- initial (Nothing) or update?
-                 -> Blog
-                 -> ExceptT String io Blog
+                 -> Blog m
+                 -> ExceptT String io (Blog m)
 collectEntryData eu blog =
     let interval = FS.TimeRange (entryUpdateTime <$> eu) Nothing
         fs = blog^.fileStore
@@ -77,9 +76,9 @@ collectEntryData eu blog =
             Nothing -> const True
             Just commit -> not . FS.idsMatch fs commit . revId
     in foldr collect blog . takeWhile notLatestKnownEntry -- . sortBy (compare `on` revDateTime)
-        <$> liftBase (hist [blog^.contentRelativePath] interval Nothing)
+        <$> liftIO (hist [blog^.contentRelativePath] interval Nothing)
 
-collect :: Revision -> Blog -> Blog
+collect :: Revision -> Blog m -> Blog m
 collect r blog = foldl' go blog (revChanges r)
   where
     go b (Added fp)    = maybe b (addEntry r b fp) $ fileTypeFromExtension fp
@@ -90,7 +89,7 @@ collect r blog = foldl' go blog (revChanges r)
 metaFromRevision :: Revision -> [Meta]
 metaFromRevision = either (const []) id . parseMeta . revDescription
 
-addEntry :: Revision -> Blog -> FilePath -> FileType -> Blog
+addEntry :: Revision -> Blog m -> FilePath -> FileType -> Blog m
 addEntry r blog fp ft =
     let meta = metaFromRevision r
         eu  = EntryUpdate (revDateTime r) (revId r)
@@ -110,7 +109,7 @@ addEntry r blog fp ft =
             & entries     %~ contract (Just fp) meta . IxSet.insert newEntry
             & lastEntryUpdate .~ eu
 
-modEntry :: Revision -> Blog -> FilePath -> FileType -> Blog
+modEntry :: Revision -> Blog m -> FilePath -> FileType -> Blog m
 modEntry r blog fp _ =
     let meta = metaFromRevision r
         eu = EntryUpdate (revDateTime r) (revId r)
@@ -130,12 +129,12 @@ modEntry r blog fp _ =
 -- * The absolute path to the repository
 -- * The content relative path inside the repository
 -- * The associated 'FileStore' object for the repository
-initializeFileStore :: (MonadBase IO io)
+initializeFileStore :: (Functor io, MonadIO io)
                     => FilePath
                     -> ExceptT String io (FilePath, FilePath, FileStore)
 initializeFileStore dir = do
-    cd <- liftBase $ canonicalizePath dir
-    d <- liftBase $ doesDirectoryExist cd
+    cd <- liftIO $ canonicalizePath dir
+    d <- liftIO $ doesDirectoryExist cd
     unless d $ throwE $ "The directory '" ++ cd ++ "' does not exist."
 
     fileStores <- catMaybes `liftM` sequence
@@ -157,7 +156,7 @@ initializeFileStore dir = do
     maybeDarcs     = maybeFileStore darcsFileStore "_darcs"
     maybeMercurial = maybeFileStore mercurialFileStore ".hg"
 
-    maybeFileStore :: (MonadBase IO io)
+    maybeFileStore :: (Functor io, MonadIO io)
                    => (FilePath -> FileStore)
                    -> FilePath
                    -> FilePath
@@ -168,15 +167,15 @@ initializeFileStore dir = do
 -- | Search for a directory named as the second argument to thins function.
 -- Traverse the directory tree up to the root if the directory cannot be found
 -- in one of the starting directory's parent directories.
-findDirInParents :: (MonadBase IO io) => FilePath -> FilePath -> io (Maybe FilePath)
+findDirInParents :: (MonadIO io) => FilePath -> FilePath -> io (Maybe FilePath)
 findDirInParents dir qry = do
-    adir <- normalise `liftM` liftBase (canonicalizePath dir)
+    adir <- normalise `liftM` liftIO (canonicalizePath dir)
     containsQry . takeWhile (not . isDrive) $ iterate takeDirectory adir
 
   where
     containsQry [] = return Nothing
     containsQry (d:ds) = do
-        p <- liftBase $ doesDirectoryExist (d </> qry)
+        p <- liftIO $ doesDirectoryExist (d </> qry)
         case () of
             _ | p -> return $ Just d
             _     -> containsQry ds

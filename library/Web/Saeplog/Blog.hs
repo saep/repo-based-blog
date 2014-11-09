@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {- |
 Module      :  Web.Saeplog.Blog
 Description :  Very experimental Blog-serving facilties
@@ -12,6 +13,7 @@ module Web.Saeplog.Blog
     ( withBlog
     , blogEntries
     , Blog
+    , getBlogConfig
     ) where
 
 import           Control.Concurrent
@@ -34,9 +36,14 @@ import qualified Web.Saeplog.Types.Blog        as Internal
 import           Web.Saeplog.Types.CachedEntry
 import           Web.Saeplog.Util
 
-newtype Blog = Blog (Maybe (TVar Internal.Blog))
+newtype Blog m = Blog (Maybe (TVar (Internal.Blog m)))
 
-withBlog :: BlogConfig -> (Blog -> IO ()) -> IO ()
+getBlogConfig :: (Functor io, MonadIO io)
+              => Blog m -> io (Maybe (BlogConfig m))
+getBlogConfig (Blog Nothing) = return Nothing
+getBlogConfig (Blog (Just blog)) = Just . view blogConfig <$> liftIO (readTVarIO blog)
+
+withBlog :: BlogConfig m -> (Blog m -> IO ()) -> IO ()
 withBlog cfg action = do
     mb <- runExceptT $ initBlog cfg
     case mb of
@@ -51,7 +58,7 @@ withBlog cfg action = do
 -- TODO saep 2014-11-05 Document those (e.g. exposing Web.Saeplog.Blog.Query)
 -- | Generate a list of blog entries. The size and order of the list is
 -- determined by the supplied request data.
-blogEntries :: Blog -> ServerPartT IO Html
+blogEntries :: (Monad m) => Blog m -> ServerPartT IO (m Html)
 blogEntries (Blog Nothing) = mzero
 blogEntries (Blog (Just tb)) = do
     _ <- liftIO . forkIO $ manageEntryUpdates tb
@@ -65,7 +72,7 @@ blogEntries (Blog (Just tb)) = do
 
 -- | On a site rendering request, test whether the entry repository should
 -- check for updates.
-manageEntryUpdates :: TVar Internal.Blog -> IO ()
+manageEntryUpdates :: TVar (Internal.Blog m) -> IO ()
 manageEntryUpdates tb = do
     b <- liftIO $ readTVarIO tb
     let luc = b^.lastUpdateCheck
@@ -88,7 +95,7 @@ manageEntryUpdates tb = do
         | otherwise = return False
 
 
-manageEntryCache :: TVar Internal.Blog -> TChan (Integer, CachedEntry) -> IO ()
+manageEntryCache :: TVar (Internal.Blog m) -> TChan (Integer, CachedEntry) -> IO ()
 manageEntryCache tb tc = forever $ do
     (i,h) <- atomically $ readTChan tc
     atomically . modifyTVar tb $ blogEntryCache %~ Map.insert i h

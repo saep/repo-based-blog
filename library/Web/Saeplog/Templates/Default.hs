@@ -23,15 +23,17 @@ import qualified Data.IxSet as IxSet
 import qualified Data.Set as Set
 import qualified Data.Text as Text
 
-entryRenderer :: Config.BlogConfig -> [(Entry, Html)] -> Html
+entryRenderer :: Monad m => Config.BlogConfig m -> [(Entry, Html)] -> m Html
 entryRenderer cfg filteredEntries  = case filteredEntries of
-    [] -> return ()
+    [] -> return $ return ()
     [(d, m)] ->
         let metaTable = renderMetaTable (Config.timeFormatter cfg) d
-        in withBlogHeader [metaTable, m]
-    es -> forM_ es $ \(d,m) -> do
-        let metaBox = renderMetaBox (Config.timeFormatter cfg) (Config.baseURL cfg) d
-        withBlogHeader [metaBox, m]
+        in return $ withBlogHeader [metaTable, m]
+    es -> do
+        bURL <- Config.baseURL cfg
+        return . forM_ es $ \(d,m) -> do
+            let metaBox = renderMetaBox (Config.timeFormatter cfg) bURL d
+            withBlogHeader [metaBox, m]
 
 cssFileName :: Text
 cssFileName = "default.css"
@@ -71,9 +73,9 @@ withBlogHeader es =
 -- | Given the path to the blog entries and the path to the static resources,
 -- create a 'BlogConfig' value that is otherwise containing the default
 -- configuration.
-createDefaultBlogConfig :: FilePath -> FilePath -> Config.BlogConfig
+createDefaultBlogConfig :: (Monad m) => FilePath -> FilePath -> Config.BlogConfig m
 createDefaultBlogConfig ep resp = Config.BlogConfig
-    { Config.baseURL = "http://127.0.0.1/blog"
+    { Config.baseURL = return "http://127.0.0.1/blog"
     , Config.entryRenderer = entryRenderer
     , Config.timeFormatter = timeFormatter
     , Config.entryPath = ep

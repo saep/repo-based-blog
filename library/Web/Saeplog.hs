@@ -15,7 +15,7 @@ module Web.Saeplog
     , module Web.Saeplog.Templates.Default
     ) where
 
-import Web.Saeplog.Blog              (Blog, blogEntries, withBlog)
+import Web.Saeplog.Blog              (Blog, blogEntries, withBlog, getBlogConfig)
 import Web.Saeplog.Config            (BlogConfig (..))
 import Web.Saeplog.Main              (saeplog)
 import Web.Saeplog.Templates.Default (createDefaultBlogConfig)

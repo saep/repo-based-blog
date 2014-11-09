@@ -10,6 +10,7 @@ import Web.Saeplog.Types.Blog
 import Control.Lens
 import Control.Monad.Trans.Except
 import Data.FileStore
+import Data.Functor.Identity
 import Data.IxSet
 import Data.List                  (sort)
 import System.Directory
@@ -25,7 +26,7 @@ isRight _ = False
 instance Show FileStore where
     show _ = "FileStore dummy"
 
-instance Show Blog where
+instance Show (Blog m) where
     show _ = "Blog dummy"
 
 spec :: Spec
@@ -65,7 +66,8 @@ spec = do
 
     describe "collectEntryData" $ do
         it "should match this test case" $ do
-            Right b <- runExceptT $ initBlog $ createDefaultBlogConfig "test-resources" "."
+            Right blog <- runExceptT $ initBlog $ createDefaultBlogConfig "test-resources" "."
+            let b = blog :: Blog Identity
 
             size (b^.entries) `shouldBe` 2
 
