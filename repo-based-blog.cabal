@@ -94,7 +94,8 @@ test-suite hspec
   build-depends:        base,
                         repo-based-blog,
 
-                        hspec ==1.*,
+                        hspec ==2.*,
+                        hspec-discover,
                         QuickCheck >=2.6,
 
                         blaze-html,
