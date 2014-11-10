@@ -48,8 +48,26 @@ sortMethodToComparator m o
 
 
 -- | The request data provided inside a URL.
--- @id=42&sortBy=Identifier@
--- For default and required values look at the 'parseQueryRqData' function.
+--
+-- Example: @?id=42&sortBy=Identifier@
+--
+-- Example backend implementation using the Happstack package:
+--
+-- > import Happstack.Server (look, HasRqData, ServerPartT)
+-- >
+-- > maybeLookAndRead :: (Monad m, Read a, Alternative m, HasRqData m)
+-- >                  => a -> String -> m a
+-- > maybeLookAndRead a qry = do
+-- >     l <- optional $ look qry
+-- >     return $ fromMaybe a (maybe (Just a) readMaybe l)
+-- >
+-- > -- | Parse the supported request data and present it in a data type.
+-- > parseQueryRqData :: ServerPartT IO EntryQuery
+-- > parseQueryRqData = EntryQuery
+-- >     <$> (sortMethodToComparator
+-- >         <$> maybeLookAndRead Update "sortBy"
+-- >         <*> maybeLookAndRead Descending "sortOrder")
+-- >
 data EntryQuery = EntryQuery
     { eqSortBy :: Entry -> Entry -> Ordering
     -- ^ The method entries are sorted by.
@@ -59,3 +77,4 @@ data EntryQuery = EntryQuery
 -- sorts the entries descending by the last update to the entry.
 instance Default EntryQuery where
     def = EntryQuery (sortMethodToComparator Update  Descending)
+

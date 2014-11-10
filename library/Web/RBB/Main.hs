@@ -17,7 +17,7 @@ import           System.IO
 
 -- | This function wrapping is needed to let the dyre library detect changes to
 -- the configuration and recompile everything. Simply define your main in
--- @~/.config/repo-based-blog/rbb.hs@ as follows:
+-- @~\/.config\/repo-based-blog\/rbb.hs@ as follows:
 --
 -- > importWeb.RBB
 -- >

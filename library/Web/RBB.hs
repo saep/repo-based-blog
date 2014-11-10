@@ -98,5 +98,9 @@ import Web.RBB.Types.FileType    (FileType (..))
 --
 
 -- $ixsetquery
--- These newtype wrappers are used by the 'IxSet' of 'Entriy' values and needed
+-- These newtype wrappers are used by the 'IxSet' of 'Entry' values and needed
 -- for search queries.
+--
+-- > queryEntryForIdentifier :: Ixset Entry -> Maybe Entry
+-- > queryEntryForIdentifier set = getOne $ set @= Index 42
+--
