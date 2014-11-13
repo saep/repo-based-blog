@@ -56,7 +56,7 @@ spec = do
             fs <- runExceptT (initializeFileStore "test-resources")
             fs `shouldSatisfy` isRight
 
-        it "should find a commit with the message \"Initial Commit\"" $ do
+        it "should find a commit with the message \"Initial commit\"" $ do
             Right (_,crp,fs) <- runExceptT (initializeFileStore "test-resources")
             rev <- revision fs "52114b620cf80ee01501417cfaf698c035437915"
             revDescription rev `shouldBe` "Initial commit"

@@ -6,7 +6,8 @@ A blogging module that uses a repository as its content backend.
 
 # Usage
 
-TODO
+The Haddock documentation of the module `Web.RBB` should contain enough
+information to get started.
 
 # Contributing
 
