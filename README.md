@@ -1,4 +1,4 @@
-![buid-status](https://travis-ci.org/saep/saeplog.svg?branch=master)
+![buid-status](https://travis-ci.org/saep/repo-based-blog.svg?branch=master)
 
 # repo-based-blog
 
