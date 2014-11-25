@@ -85,7 +85,7 @@ manageEntryUpdates tb = do
     b <- liftIO $ readTVarIO tb
     let luc = b^.lastUpdateCheck
     now <- liftIO getCurrentTime
-    let interval = max 1 . fromInteger . updateInterval $ b^.blogConfig
+    let interval = min 1 . fromInteger . updateInterval $ b^.blogConfig
     shouldCheckForUpdate <- liftIO . atomically $ updateUpdateTime now luc interval
     when shouldCheckForUpdate $ do
         blog <- liftIO $ readTVarIO tb
