@@ -19,11 +19,7 @@ import           Web.RBB.Types.FileType
 import Test.Hspec      as Test
 import Test.QuickCheck
 
-instance (Ord a, Arbitrary a) => Arbitrary (Set a) where
-    arbitrary = do
-        Set.fromList <$> arbitrary
-
-noNewline c = c `notElem` "\n\r"
+noNewline c = c `notElem` ("\n\r" :: String)
 
 instance Arbitrary Text where
     arbitrary = do

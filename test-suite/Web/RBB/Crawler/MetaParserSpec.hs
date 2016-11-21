@@ -10,9 +10,7 @@ import Control.Monad
 import Data.Function (on)
 import Data.List     (intercalate, permutations, sortBy)
 import Text.Parsec   (ParseError, parse)
-
-instance Eq ParseError where
-    (==) = (==) `on` show
+import Text.Parsec.String
 
 isLeft :: Either l r -> Bool
 isLeft (Left _) = True
@@ -20,7 +18,8 @@ isLeft _        = False
 
 spec :: Spec
 spec = parallel $ do
-    let ptest p = parse p "MetaSpec"
+    let ptest :: Parser a -> String -> Either ParseError a
+        ptest p = parse p "MetaSpec"
     describe "pSpaceDelimitedElement" $ do
         let p = ptest pSpaceDelimitedElement
         it "should parse a spaceless string" $ do
