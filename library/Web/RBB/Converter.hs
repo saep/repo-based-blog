@@ -24,6 +24,7 @@ import           Control.Monad.Reader
 import           Data.Default
 import qualified Data.Map                     as Map
 import qualified Data.Set                     as Set
+import           Text.Pandoc.Error            (PandocError)
 import           Text.Pandoc.Options
 import           Text.Pandoc.Readers.Markdown
 import           Text.Pandoc.Writers.HTML
@@ -50,34 +51,44 @@ renderEntries blog is = do
                 => [(Entry, Html)]
                 -> (Maybe CachedEntry, Maybe Entry)
                 -> io [(Entry, Html)]
-    manageCache acc ie =
-        case ie of
-            (_,Nothing) -> return acc
-            (Just ce, Just e) | ((==) `on` updateTime) (ce^.cacheEntryData) e
-                        -> return $ (ce^.cacheEntryData, ce^.entry) : acc
-            (_, Just e) -> do
-                en <- convertToHTML e <$> liftIO (readFile (e^.fullPath))
-                let h = CachedEntry en (e^.lastUpdate) e
-                liftIO . atomically $
-                    writeTChan (blog^.blogCacheChannel) (e^.entryId, h)
-                return $ (e, en) : acc
+    manageCache acc ie = case ie of
+        (_,Nothing) -> 
+            return acc
+
+        (Just ce, Just e) | ((==) `on` updateTime) (ce^.cacheEntryData) e ->
+            return $ (ce^.cacheEntryData, ce^.entry) : acc
+
+        (_, Just e) -> do
+            en <- convertToHTML e <$> liftIO (readFile (e^.fullPath))
+            case en of
+                Left err ->
+                    return acc
+
+                Right html -> do
+                    let h = CachedEntry html (e^.lastUpdate) e
+                    liftIO . atomically $
+                        writeTChan (blog^.blogCacheChannel) (e^.entryId, h)
+                    return $ (e, html) : acc
       where
         updateTime e = entryUpdateTime (e^.lastUpdate)
 
 -- | Converter function that choses an appropriate pandoc configuration for the
 -- given 'FileType' and converts the given 'String' to 'Html'.
-fileContentToHtml :: FileType -> String -> Html
-fileContentToHtml ft = writeHtml defaultWriter . case ft of
+fileContentToHtml :: FileType -> String -> Either PandocError Html
+fileContentToHtml ft content = fmap (writeHtml defaultWriter) $ case ft of
     PandocMarkdown ->
-        readMarkdown (def
-        { readerExtensions = pandocExtensions })
+        readMarkdown 
+            (def { readerExtensions = pandocExtensions }) 
+            content
+
     LiterateHaskell ->
         readMarkdown (def
-        { readerExtensions = Ext_literate_haskell `Set.insert` pandocExtensions })
+            { readerExtensions = Ext_literate_haskell `Set.insert` pandocExtensions })
+            content
 
 -- | Convert the given file contents given as a 'String' to an 'Html' element
 -- and add some meta data from the 'EntryData' argument'.
-convertToHTML :: Entry -> String -> Html
+convertToHTML :: Entry -> String -> Either PandocError Html
 convertToHTML ed = fileContentToHtml (ed^.fileType)
 
 -- | Default 'WriterOptions' for the converters.

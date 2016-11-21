@@ -16,7 +16,6 @@ import qualified Data.IxSet                  as IxSet
 import qualified Data.Set                    as Set
 import qualified Data.Text                   as Text
 import           Data.Time
-import           System.Locale
 import           Text.Blaze.Html5            as H
 import           Text.Blaze.Html5.Attributes as A
 import qualified Web.RBB.Config              as Config

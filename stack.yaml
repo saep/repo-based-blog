@@ -1,0 +1,10 @@
+resolver: lts-7.9
+packages: 
+  - '.'
+
+extra-deps: 
+  - filestore-0.6.2
+
+flags: {}
+
+extra-package-dbs: []
