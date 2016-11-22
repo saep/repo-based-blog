@@ -6,7 +6,7 @@ A blogging module that uses a repository as its content backend.
 
 # Usage
 
-The Haddock documentation of the module `Web.RBB` should contain enough
+The Haddock documentation of the module [Web.RBB](https://hackage.haskell.org/package/repo-based-blog-0.0.1/docs/Web-RBB.html) should contain enough
 information to get started.
 
 # Contributing
